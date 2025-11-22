@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import connectDb from "./db/db.js";
+import authRouter from "./routes/authRoutes.js";
 //Populating environment variables
 dotenv.config({ path: "../.env" });
 
@@ -13,6 +14,9 @@ app.use(express.json());
 
 //connect to db
 connectDb();
+
+//mounting routes
+app.use("/api/auth", authRouter);
 
 //Api health route
 app.get("/api/health", (req, res) => {
