@@ -1,11 +1,14 @@
 import express from "express";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
+import cookieParser from "cookie-parser";
+
 //Populating environment variables
 dotenv.config({ path: "../.env" });
 import connectDb from "./db/db.js";
 import authRouter from "./routes/authRoutes.js";
-import cookieParser from "cookie-parser";
+import jobRouter from "./routes/jobRoutes.js";
+import authMiddleware from "./middlewares/auth.js";
 
 //Initialising express app
 const app = express();
@@ -21,6 +24,7 @@ connectDb();
 
 //mounting routes
 app.use("/api/auth", authRouter);
+app.use("/api/jobs", authMiddleware, jobRouter);
 
 //Api health route
 app.get("/api/health", (req, res) => {
