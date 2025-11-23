@@ -1,16 +1,20 @@
 import express from "express";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
-import connectDb from "./db/db.js";
-import authRouter from "./routes/authRoutes.js";
 //Populating environment variables
 dotenv.config({ path: "../.env" });
+import connectDb from "./db/db.js";
+import authRouter from "./routes/authRoutes.js";
+import cookieParser from "cookie-parser";
 
 //Initialising express app
 const app = express();
 
 //built in middleware to parse request body
 app.use(express.json());
+
+// middleware to parse cookies
+app.use(cookieParser());
 
 //connect to db
 connectDb();
