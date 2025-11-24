@@ -46,3 +46,13 @@ export const test = async (req, res, next) => {
     next(error);
   }
 };
+
+//Handler to get all jobs
+export const getAllJobs = async (req, res, next) => {
+  const jobs = await Job.find({});
+
+  res.status(200).json({
+    success: true,
+    jobs,
+  });
+};
