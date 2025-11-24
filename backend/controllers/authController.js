@@ -16,7 +16,21 @@ function signToken(id) {
 }
 
 export const registerUser = async (req, res, next) => {
-  const { email, password } = req.body;
+  const { email, password, confirmPassword } = req.body;
+
+  if (!confirmPassword) {
+    res.status(400).json({
+      success: false,
+      message: "Please confirm the password",
+    });
+  }
+
+  if (password !== confirmPassword) {
+    res.status(400).json({
+      success: false,
+      message: "Passwords do not match",
+    });
+  }
 
   //finding the user with this gmail
   const user = await User.findOne({ email });
@@ -38,9 +52,6 @@ export const registerUser = async (req, res, next) => {
   // creating the new user
   const newUser = await User.create(req.body);
 
-  // removing the password so that it is not included in the response
-  newUser.password = undefined;
-
   //sending the response
   return res.status(201).json({
     success: true,
@@ -59,10 +70,10 @@ export const loginUser = async (req, res, next) => {
   }
 
   // getting the user from the database
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email }).select("+password");
 
   // checking if the user is valid and user is correct
-  if (!user || !(await user.comparepassword(password, user.password))) {
+  if (!user || !(await user.comparePassword(password))) {
     return res.status(400).json({
       error: "Invalid credentials",
     });

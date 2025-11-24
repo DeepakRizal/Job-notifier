@@ -42,7 +42,7 @@ async function findJobsToProcess() {
 async function runMatcher() {
   await connectDb();
 
-  const THRESHOLD = 0.1; // 60%
+  const THRESHOLD = 0.1; // 10%
 
   const jobs = await findJobsToProcess();
   if (!jobs.length) {

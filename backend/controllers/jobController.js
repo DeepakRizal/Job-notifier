@@ -56,3 +56,33 @@ export const getAllJobs = async (req, res, next) => {
     jobs,
   });
 };
+
+export const getMyJobs = async (req, res, next) => {
+  //read the skills
+  const { skills } = req.user;
+
+  //query the jobs from the database
+  const jobs = await Job.find();
+
+  // filter the jobs that matches the user skills
+  const filteredJobs = jobs.filter((job) => {
+    const jobTextRaw = `${job.title || ""} ${job.description || ""} ${
+      job.company || ""
+    }`;
+
+    const jobText = jobTextRaw
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim()
+      .split(" ")
+      .filter(Boolean);
+
+    return skills.some((skill) => jobText.includes(skill));
+  });
+
+  // return those jobs to the logged in user
+  res.status(200).json({
+    success: true,
+    jobs: filteredJobs,
+  });
+};
