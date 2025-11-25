@@ -41,7 +41,7 @@ export const test = async (req, res, next) => {
       { upsert: true, new: true }
     );
 
-    res.json({ success: true, job });
+    return res.json({ success: true, job });
   } catch (error) {
     next(error);
   }

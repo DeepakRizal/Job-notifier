@@ -9,6 +9,7 @@ import connectDb from "./db/db.js";
 import authRouter from "./routes/authRoutes.js";
 import jobRouter from "./routes/jobRoutes.js";
 import authMiddleware from "./middlewares/auth.js";
+import { errorHandler } from "./middlewares/errorHandler.js";
 
 //Initialising express app
 const app = express();
@@ -44,6 +45,9 @@ app.get("/api/health", (req, res) => {
     db: dbStatus,
   });
 });
+
+//global error handler
+app.use(errorHandler);
 
 // getting the port from environment variable
 const PORT = process.env.PORT || 4000;
