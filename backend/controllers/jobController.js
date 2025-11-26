@@ -26,6 +26,7 @@ export const test = async (req, res, next) => {
       postedAt,
       discoveredAt: new Date(),
       rawHTML: body.rawHTML,
+      tags: body.tags,
     };
 
     // upsert by url if available, otherwise by sourceId, otherwise insert new
