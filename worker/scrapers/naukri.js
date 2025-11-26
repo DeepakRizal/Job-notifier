@@ -3,6 +3,52 @@ dotenv.config();
 
 import playwright from "playwright";
 
+async function tryApplySiteSort(page, sort) {
+  if (!sort) return;
+
+  try {
+    // wait a short time for the sort control to render
+    await page.waitForTimeout(300);
+
+    const btn = await page.$("button#filter-sort");
+    if (!btn) return;
+
+    // Open the dropdown
+    await btn.click().catch(() => null);
+    // wait for menu to be visible (ul[data-filter-id="sort"])
+    await page
+      .waitForSelector('ul[data-filter-id="sort"]', { timeout: 1500 })
+      .catch(() => null);
+
+    // For Date option your markup has: <a data-id="filter-sort-f"><span>Date</span></a>
+    if (sort === "date") {
+      const dateOption = await page.$(
+        'ul[data-filter-id="sort"] a[data-id="filter-sort-f"]'
+      );
+      if (dateOption) {
+        await dateOption.click().catch(() => null);
+        // wait for page to update (site may reload results via XHR)
+        await page.waitForTimeout(900);
+        // also wait for networkidle as an extra safety
+        await page.waitForLoadState?.("networkidle").catch(() => null);
+      }
+    } else if (sort === "name") {
+      // If you ever map 'name' to relevance / default
+      const nameOption = await page.$(
+        'ul[data-filter-id="sort"] a[data-id="filter-sort-r"]'
+      );
+      if (nameOption) {
+        await nameOption.click().catch(() => null);
+        await page.waitForTimeout(900);
+        await page.waitForLoadState?.("networkidle").catch(() => null);
+      }
+    }
+  } catch (err) {
+    // best-effort — don't break the scraper if this fails
+    console.warn("tryApplySiteSort failed:", err?.message || err);
+  }
+}
+
 function parseRelativeTime(text) {
   if (!text) return null;
   text = text.toLowerCase().trim();
@@ -29,7 +75,12 @@ function parseRelativeTime(text) {
   return isNaN(d.getTime()) ? null : d.toISOString();
 }
 
-export default async function NaukriScraper({ query, url, userAgent }) {
+export default async function NaukriScraper({
+  query,
+  url,
+  userAgent,
+  sort = null,
+}) {
   // Build target URL
   const target =
     url ||
@@ -67,6 +118,8 @@ export default async function NaukriScraper({ query, url, userAgent }) {
     });
 
     if (!response) throw new Error("no response");
+
+    await tryApplySiteSort(page, sort);
 
     // Wait for job cards to appear
     await page
@@ -125,6 +178,13 @@ export default async function NaukriScraper({ query, url, userAgent }) {
     for (const j of jobs) {
       j.postedAt = parseRelativeTime(j.postedText);
     }
+
+    // client-side guaranteed sort (newest first, nulls last)
+    jobs.sort((a, b) => {
+      const ta = a.postedAt ? new Date(a.postedAt).getTime() : 0;
+      const tb = b.postedAt ? new Date(b.postedAt).getTime() : 0;
+      return tb - ta;
+    });
 
     await browser.close();
     return jobs;
