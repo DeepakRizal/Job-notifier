@@ -52,6 +52,8 @@ export const registerUser = async (req, res, next) => {
   // creating the new user
   const newUser = await User.create(req.body);
 
+  newUser.password = undefined;
+
   //sending the response
   return res.status(201).json({
     success: true,

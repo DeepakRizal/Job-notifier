@@ -21,6 +21,8 @@ const matchSchema = new mongoose.Schema({
   },
 });
 
+matchSchema.index({ userId: 1, jobId: 1 }, { unique: true });
+
 const Match = mongoose.models.Match || mongoose.model("Match", matchSchema);
 
 export default Match;

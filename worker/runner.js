@@ -11,11 +11,13 @@ const BACKEND = process.env.WORKER_BACKEND_URL || "http://localhost:4000";
 const USER_AGENT =
   process.env.USER_AGENT ||
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
-const SCRAPE_INTERVAL = Number(process.env.SCRAPE_INTERVAL || 300) * 1000; // seconds -> ms
+const SCRAPE_INTERVAL = Number(process.env.SCRAPE_INTERVAL || 300) * 1000;
 const LRU_SIZE = Number(process.env.WORKER_LRU_SIZE || 1000);
 
+//creating least recently used cached
 const recent = LRU(LRU_SIZE);
 
+// function to make the unique fingerprint
 function makeFingerprint(job) {
   const seed = (
     job.url || `${job.title || ""}|${job.company || ""}`
@@ -23,6 +25,7 @@ function makeFingerprint(job) {
   return crypto.createHash("sha256").update(seed).digest("hex");
 }
 
+// function to post job that have scrapped by the scrapper
 async function postJob(job) {
   try {
     const res = await axios.post(`${BACKEND}/api/jobs/test`, job, {
@@ -44,6 +47,7 @@ async function postJob(job) {
   }
 }
 
+// function to process the jobs array
 async function processJobs(jobs) {
   for (const j of jobs) {
     const job = { ...j, source: "naukri" };
@@ -72,10 +76,15 @@ async function runOnce() {
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
+
   for (const q of queries) {
     console.log("Scraping query:", q);
     try {
-      const jobs = await Naukriscraper({ query: q, userAgent: USER_AGENT });
+      const jobs = await Naukriscraper({
+        query: q,
+        userAgent: USER_AGENT,
+        sort: "date",
+      });
       console.log("Found", jobs.length, "jobs for", q);
       await processJobs(jobs);
     } catch (err) {
@@ -92,6 +101,8 @@ async function runOnce() {
 async function main() {
   console.log("Worker starting — backend:", BACKEND);
   await runOnce();
+
+  // scrapping after every 5 minutes
   setInterval(
     () => runOnce().catch((e) => console.error("runOnce failure", e)),
     SCRAPE_INTERVAL
