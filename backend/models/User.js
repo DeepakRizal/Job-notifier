@@ -27,6 +27,11 @@ const userSchema = new mongoose.Schema(
       selected: false,
     },
 
+    experience: {
+      type: Number,
+      default: 0,
+    },
+
     skills: {
       type: [String],
       default: [],

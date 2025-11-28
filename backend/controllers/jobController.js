@@ -7,6 +7,16 @@ import { sendEmail } from "../utils/email.js";
 const NOTIFY_WINDOW_HOURS = Number(process.env.NOTIFY_WINDOW_HOURS || 5);
 const NOTIFY_WINDOW_MS = NOTIFY_WINDOW_HOURS * 60 * 60 * 1000;
 
+function parseExperience(expStr) {
+  if (!expStr) return null;
+  // simple regex: captures "8-12", "3-5", "0-1", "2 Yrs" etc.
+  const m = expStr.match(/(\d+)(?:\s*-\s*(\d+))?/);
+  if (!m) return null;
+  const min = parseInt(m[1], 10);
+  const max = m[2] ? parseInt(m[2], 10) : min;
+  return { min, max };
+}
+
 export const test = async (req, res, next) => {
   try {
     const body = req.body;
@@ -31,10 +41,15 @@ export const test = async (req, res, next) => {
       source: body.source || "test",
       sourceId,
       postedAt,
+      experience: body.experience,
       discoveredAt: new Date(),
       rawHTML: body.rawHTML,
       tags: body.tags,
     };
+
+    doc.experience = parseExperience(doc.experience);
+    doc.minExperience = doc.experience ? doc.experience.min : null;
+    doc.maxExperience = doc.experience ? doc.experience.max : null;
 
     // upsert by url if available, otherwise by sourceId, otherwise insert new
     const query = url
@@ -68,8 +83,6 @@ export const test = async (req, res, next) => {
     const ageMs = Date.now() - new Date(jobTime).getTime();
     const isFresh = ageMs <= NOTIFY_WINDOW_MS;
 
-    console.log(isFresh);
-
     if (!isFresh) {
       console.log(
         `Job too old (${Math.round(ageMs / 3600000)}h). Skipping notifications.`
@@ -82,6 +95,8 @@ export const test = async (req, res, next) => {
 
         // run your matcher for this single job (returns created Match docs)
         const newMatches = await matchSingleJob(job);
+
+        console.log(newMatches);
 
         // notify matched users (example: email)
         for (const m of newMatches) {

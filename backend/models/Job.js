@@ -46,6 +46,19 @@ const jobsSchema = new mongoose.Schema(
       default: Date.now,
       index: true,
     },
+    experience: {
+      type: {
+        min: Number,
+        max: Number,
+      },
+    },
+    minExperience: {
+      type: Number,
+      default: 0,
+    },
+    maxExperience: {
+      type: Number,
+    },
     fingerprint: {
       type: String,
     },

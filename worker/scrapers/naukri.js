@@ -49,6 +49,16 @@ async function tryApplySiteSort(page, sort) {
   }
 }
 
+function parseExperience(expStr) {
+  if (!expStr) return null;
+  // simple regex: captures "8-12", "3-5", "0-1", "2 Yrs" etc.
+  const m = expStr.match(/(\d+)(?:\s*-\s*(\d+))?/);
+  if (!m) return null;
+  const min = parseInt(m[1], 10);
+  const max = m[2] ? parseInt(m[2], 10) : min;
+  return { min, max };
+}
+
 function parseRelativeTime(text) {
   if (!text) return null;
   text = text.toLowerCase().trim();
@@ -146,32 +156,86 @@ export default async function NaukriScraper({
     // Extract jobs
     const jobs = await page.evaluate(() => {
       const nodes = Array.from(document.querySelectorAll(".cust-job-tuple"));
-      return nodes.map((card) => {
-        const titleEl = card.querySelector("a.title");
-        const companyEl = card.querySelector("a.comp-name");
-        const locEl = card.querySelector(".locWdth");
-        const descEl = card.querySelector(".job-desc");
-        const tagsEls = Array.from(card.querySelectorAll("ul.tags-gt li"));
-        const wrapper = card.closest(".srp-jobtuple-wrapper");
+      return nodes
+        .map((card) => {
+          try {
+            const titleEl =
+              card.querySelector("a.title") ||
+              card.querySelector("h2 a") ||
+              null;
+            const companyEl =
+              card.querySelector("a.comp-name") ||
+              card.querySelector(".comp-name") ||
+              null;
+            const locEl =
+              card.querySelector(".locWdth") ||
+              card.querySelector(".loc") ||
+              null;
+            const descEl =
+              card.querySelector(".job-desc") ||
+              card.querySelector(".job-desc *") ||
+              null;
 
-        const url = titleEl
-          ? titleEl.href || titleEl.getAttribute("href")
-          : null;
+            // Try multiple selectors that may contain experience
+            const experienceEl =
+              card.querySelector(".expwdth") ||
+              card.querySelector(".exp") ||
+              card.querySelector(".exp-wrap .expwdth") ||
+              null;
 
-        return {
-          title: titleEl ? titleEl.textContent.trim() : null,
-          company: companyEl ? companyEl.textContent.trim() : null,
-          location: locEl ? locEl.textContent.trim() : null,
-          description: descEl ? descEl.textContent.trim() : null,
-          tags: tagsEls.map((t) => t.textContent.trim()),
-          postedText: (
-            card.querySelector(".job-post-day")?.textContent || null
-          )?.trim(),
-          url,
-          sourceId: wrapper ? wrapper.getAttribute("data-job-id") : null,
-          rawHTML: card.outerHTML,
-        };
-      });
+            // helper to safely get text
+            const getText = (el) =>
+              el && el.textContent ? el.textContent.trim() : null;
+
+            // prefer title attribute when present (cleaner in many Naukri cards)
+            let experienceRaw = null;
+            if (experienceEl) {
+              experienceRaw =
+                (experienceEl.getAttribute &&
+                  experienceEl.getAttribute("title")) ||
+                getText(experienceEl);
+            }
+
+            // normalize: if it's like "7-12 Yrs " -> trim and keep
+            if (typeof experienceRaw === "string") {
+              experienceRaw = experienceRaw.replace(/\s+/g, " ").trim();
+              if (experienceRaw === "") experienceRaw = null;
+            }
+
+            const tagsEls =
+              Array.from(card.querySelectorAll("ul.tags-gt li")) || [];
+
+            const url = titleEl
+              ? titleEl.href || titleEl.getAttribute("href") || null
+              : null;
+
+            return {
+              title: getText(titleEl),
+              company: getText(companyEl),
+              location: getText(locEl),
+              description: getText(descEl),
+              tags: tagsEls
+                .map((t) => (t && t.textContent ? t.textContent.trim() : null))
+                .filter(Boolean),
+              postedText: getText(
+                card.querySelector(".job-post-day") ||
+                  card.querySelector(".job-posted") ||
+                  null
+              ),
+              url,
+              // store raw experience string (or null)
+              experience: experienceRaw,
+              sourceId:
+                (card.closest(".srp-jobtuple-wrapper") || card).getAttribute?.(
+                  "data-job-id"
+                ) || null,
+              rawHTML: card.outerHTML,
+            };
+          } catch (err) {
+            return null;
+          }
+        })
+        .filter(Boolean);
     });
 
     // Add postedAt ISO date
