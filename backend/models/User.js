@@ -19,6 +19,7 @@ const userSchema = new mongoose.Schema(
         message: "Please enter a valid email address",
       },
     },
+
     password: {
       type: String,
       required: [true, "Password is required!"],
@@ -29,6 +30,36 @@ const userSchema = new mongoose.Schema(
     skills: {
       type: [String],
       default: [],
+      set: (skills) => skills.map((s) => s.trim().toLowerCase()),
+    },
+
+    pushSubscriptions: {
+      type: [
+        {
+          endpoint: String,
+          keys: {
+            p256dh: String,
+            auth: String,
+          },
+        },
+      ],
+
+      default: [],
+    },
+    notificationPreferences: {
+      email: {
+        type: Boolean,
+        default: true,
+      },
+      push: {
+        type: Boolean,
+        default: false,
+      },
+    },
+
+    emailUnsubscribed: {
+      type: Boolean,
+      default: false,
     },
   },
   {
