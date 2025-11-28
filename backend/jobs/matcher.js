@@ -3,7 +3,6 @@ import Match from "../models/Match.js";
 import { doesJobMatchUser } from "../utils/match.js";
 
 export async function matchSingleJob(job) {
-  // load users (small-scale). For many users, page through them.
   const users = await User.find({}).lean();
 
   const createdMatches = [];
@@ -15,8 +14,6 @@ export async function matchSingleJob(job) {
     const isMatch = doesJobMatchUser(job, user);
     if (!isMatch) continue;
 
-    // Upsert match to avoid duplicates (atomic-ish)
-    // We use $setOnInsert so we don't overwrite notified flag later
     const match = await Match.findOneAndUpdate(
       { userId: user._id, jobId: job._id },
       {

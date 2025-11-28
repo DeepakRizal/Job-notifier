@@ -4,6 +4,9 @@ import User from "../models/User.js";
 import Match from "../models/Match.js";
 import { sendEmail } from "../utils/email.js";
 
+const NOTIFY_WINDOW_HOURS = Number(process.env.NOTIFY_WINDOW_HOURS || 5);
+const NOTIFY_WINDOW_MS = NOTIFY_WINDOW_HOURS * 60 * 60 * 1000;
+
 export const test = async (req, res, next) => {
   try {
     const body = req.body;
@@ -58,38 +61,55 @@ export const test = async (req, res, next) => {
 
     const job = await Job.findOne(query);
 
-    if (wasInserted) {
-      console.log("New job inserted — running matcher and notifying matches.");
+    const jobTime = job.postedAt
+      ? new Date(job.postedAt)
+      : new Date(job.discoveredAt || job.createdAt || Date.now());
 
-      // run your matcher for this single job (returns created Match docs)
-      const newMatches = await matchSingleJob(job);
+    const ageMs = Date.now() - new Date(jobTime).getTime();
+    const isFresh = ageMs <= NOTIFY_WINDOW_MS;
 
-      // notify matched users (example: email)
-      for (const m of newMatches) {
-        // load the user so we know where/how to notify
-        const user = await User.findById(m.userId).lean();
-        if (!user) continue;
+    console.log(isFresh);
 
-        // only send email if preference allows and email exists
-        if (
-          user.notificationPreferences?.email &&
-          user.email &&
-          !user.emailUnsubscribed
-        ) {
-          const ok = await sendEmail(user.email, job);
-          if (ok) {
-            // mark match as notified (atomic):
-            await Match.findByIdAndUpdate(m._id, {
-              $set: { notified: true, notifiedAt: new Date() },
-            });
-          } else {
-            // if send failed, leave notified=false so you can retry later / log failure
-            console.warn("Failed to send email to", user.email);
+    if (!isFresh) {
+      console.log(
+        `Job too old (${Math.round(ageMs / 3600000)}h). Skipping notifications.`
+      );
+    } else {
+      if (wasInserted) {
+        console.log(
+          "New job inserted — running matcher and notifying matches."
+        );
+
+        // run your matcher for this single job (returns created Match docs)
+        const newMatches = await matchSingleJob(job);
+
+        // notify matched users (example: email)
+        for (const m of newMatches) {
+          // load the user so we know where/how to notify
+          const user = await User.findById(m.userId).lean();
+          if (!user) continue;
+
+          // only send email if preference allows and email exists
+          if (
+            user.notificationPreferences?.email &&
+            user.email &&
+            !user.emailUnsubscribed
+          ) {
+            const ok = await sendEmail(user.email, job);
+            if (ok) {
+              // mark match as notified (atomic):
+              await Match.findByIdAndUpdate(m._id, {
+                $set: { notified: true, notifiedAt: new Date() },
+              });
+            } else {
+              // if send failed, leave notified=false so you can retry later / log failure
+              console.warn("Failed to send email to", user.email);
+            }
           }
         }
+      } else {
+        console.log("Existing job updated — skipping immediate notifications.");
       }
-    } else {
-      console.log("Existing job updated — skipping immediate notifications.");
     }
 
     // finally return response
