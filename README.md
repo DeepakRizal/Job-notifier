@@ -10,7 +10,7 @@ Job Notifier helps developers and job seekers stay on top of new opportunities b
 
 ### Core Functionality
 
-- **Smart Job Matching** - Token-based matching algorithm that prioritizes job titles and companies based on your skills
+- **Smart Job Matching** - Token-based matching algorithm that analyzes job titles and company names to match them with your skills
 - **Continuous Scraping** - Automated workers scrape popular job portals and upsert listings in real-time
 - **De-duplication** - Intelligent fingerprinting prevents duplicate entries and keeps your feed clean
 - **Flexible Notifications** - Choose between immediate, hourly, or daily digests via email, Telegram, or web push

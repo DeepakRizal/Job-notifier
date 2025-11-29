@@ -12,9 +12,6 @@ export function Footer() {
             <p className="text-xs text-text-muted">
               © {currentYear} Job-Notifier. All rights reserved.
             </p>
-            <p className="mt-1 text-[10px] text-text-muted">
-              Built for engineers who care about craft.
-            </p>
           </div>
 
           {/* Right: Links */}
@@ -37,8 +34,6 @@ export function Footer() {
             >
               Login
             </Link>
-            <div className="h-3 w-px bg-surface-border" />
-            <span className="text-[10px]">SaaS Minimal with Cyber Edge</span>
           </nav>
         </div>
       </div>
