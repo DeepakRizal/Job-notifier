@@ -4,7 +4,6 @@ import { doesJobMatchUser } from "../utils/match.js";
 
 export async function matchSingleJob(job) {
   const users = await User.find({}).lean();
-
   const createdMatches = [];
 
   for (const user of users) {
