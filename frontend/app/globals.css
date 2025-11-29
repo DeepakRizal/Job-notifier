@@ -1,68 +1,198 @@
 @import "tailwindcss";
 
 /*
-  Global design system
-  Theme: “SaaS Minimal with Cyber Edge”
-  - Inter as primary font
-  - Single accent: Professional Blue
-  - Clean white/grey surfaces with subtle borders and soft shadows
+  Refined Design System for Job-Notifier
+  - Professional blue-based palette
+  - Consistent spacing, typography, and shadow scales
+  - Dark mode support
+  - Accessibility-first with reduced motion support
 */
 
 :root {
-  /* Layout + surface */
-  --bg-root: #ffffff;        /* Pure White */
-  --bg-subtle: #f8fafc;     /* Softer Grey (slightly warmer) */
-  --border-subtle: #e2e8f0; /* Softer Border Grey */
-  --border-focus: #cbd5e1;  /* Focus Border */
+  /* ============================================
+     COLOR TOKENS - Light Mode
+     ============================================ */
+  
+  /* Brand Accent - Refined Blue Palette */
+  --accent-50: #eff6ff;
+  --accent-100: #dbeafe;
+  --accent-200: #bfdbfe;
+  --accent-300: #93c5fd;
+  --accent-400: #60a5fa;
+  --accent-500: #3b82f6;  /* Primary brand */
+  --accent-600: #2563eb;  /* Press/Active */
+  --accent-700: #1d4ed8;
+  --accent-900: #1e3a8a;
 
-  /* Text - Enhanced contrast */
-  --text-title: #0f172a;     /* Deeper Black for better contrast */
-  --text-body: #475569;       /* Slightly darker for readability */
-  --text-muted: #94a3b8;     /* Softer muted grey */
+  /* Primary Accent (mapped for compatibility) */
+  --accent: var(--accent-500);
+  --accent-hover: var(--accent-400);
+  --accent-press: var(--accent-600);
+  --accent-light: var(--accent-100);
+  --accent-subtle: var(--accent-50);
 
-  /* Accent (Professional Blue family) - Enhanced */
-  --accent: #3b82f6;         /* Primary brand — Blue 500 */
-  --accent-hover: #60a5fa;   /* Hover — Blue 400 */
-  --accent-press: #2563eb;   /* Press / Active — Blue 600 */
-  --accent-light: #dbeafe;   /* Light accent for backgrounds */
-  --accent-subtle: #eff6ff;  /* Very light accent */
+  /* Surface & Background */
+  --bg-root: #ffffff;
+  --bg-subtle: #f8fafc;
+  --bg-elevated: #ffffff;
+  --bg-overlay: rgba(255, 255, 255, 0.8);
 
-  /* Semantic - Enhanced */
+  /* Borders */
+  --border-subtle: #e2e8f0;
+  --border-default: #cbd5e1;
+  --border-focus: #93c5fd;
+  --border-strong: #94a3b8;
+
+  /* Text Hierarchy */
+  --text-title: #0f172a;      /* Headings */
+  --text-body: #475569;        /* Body text */
+  --text-muted: #64748b;       /* Secondary text */
+  --text-subtle: #94a3b8;      /* Tertiary text */
+  --text-inverse: #ffffff;     /* Text on dark */
+
+  /* Semantic Colors */
   --success: #10b981;
   --success-light: #d1fae5;
+  --success-bg: #ecfdf5;
   --warning: #f59e0b;
   --warning-light: #fef3c7;
+  --warning-bg: #fffbeb;
   --danger: #ef4444;
   --danger-light: #fee2e2;
+  --danger-bg: #fef2f2;
 
-  /* Enhanced Shadow System */
+  /* ============================================
+     SPACING SCALE
+     ============================================ */
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.25rem;   /* 20px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+  --space-16: 4rem;     /* 64px */
+  --space-20: 5rem;     /* 80px */
+
+  /* ============================================
+     BORDER RADIUS SCALE
+     ============================================ */
+  --radius-xs: 0.25rem;    /* 4px */
+  --radius-sm: 0.375rem;   /* 6px */
+  --radius-md: 0.5rem;    /* 8px */
+  --radius-lg: 0.75rem;   /* 12px */
+  --radius-xl: 1rem;      /* 16px */
+  --radius-2xl: 1.5rem;    /* 24px */
+  --radius-full: 9999px;   /* Pill */
+
+  /* ============================================
+     SHADOW DEPTH SCALE
+     ============================================ */
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-  --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
-  --card-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-  --neon-border: 0 0 0 1px rgba(59, 130, 246, 0.2);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 
-  /* Button shadows */
-  --btn-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --btn-shadow-hover: 0 4px 6px -1px rgba(59, 130, 246, 0.3), 0 2px 4px -2px rgba(59, 130, 246, 0.2);
+  /* Component-specific shadows */
+  --card-shadow: var(--shadow-sm);
+  --card-shadow-hover: var(--shadow-md);
+  --btn-shadow: var(--shadow-xs);
+  --btn-shadow-hover: 0 4px 6px -1px rgba(59, 130, 246, 0.25), 0 2px 4px -2px rgba(59, 130, 246, 0.15);
+  --focus-ring: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 0 0 1px var(--accent-500);
 
-  /* Spacing tokens */
-  --page-padding: 32px;
-  --card-padding: 24px;
+  /* ============================================
+     TYPOGRAPHY SCALE
+     ============================================ */
+  --font-size-xs: 0.75rem;      /* 12px */
+  --font-size-sm: 0.875rem;     /* 14px */
+  --font-size-base: 1rem;       /* 16px */
+  --font-size-lg: 1.125rem;     /* 18px */
+  --font-size-xl: 1.25rem;      /* 20px */
+  --font-size-2xl: 1.5rem;      /* 24px */
+  --font-size-3xl: 1.875rem;    /* 30px */
+  --font-size-4xl: 2.25rem;     /* 36px */
+  --font-size-5xl: 3rem;        /* 48px */
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --line-height-tight: 1.25;
+  --line-height-snug: 1.375;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.625;
+  --line-height-loose: 2;
+
+  --letter-spacing-tight: -0.025em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.025em;
+}
+
+/* ============================================
+   DARK MODE TOKENS
+   ============================================ */
+.dark {
+  /* Brand Accent (same in dark mode) */
+  --accent: var(--accent-500);
+  --accent-hover: var(--accent-400);
+  --accent-press: var(--accent-600);
+  --accent-light: rgba(59, 130, 246, 0.15);
+  --accent-subtle: rgba(59, 130, 246, 0.08);
+
+  /* Surface & Background */
+  --bg-root: #0f172a;
+  --bg-subtle: #1e293b;
+  --bg-elevated: #1e293b;
+  --bg-overlay: rgba(30, 41, 59, 0.8);
+
+  /* Borders */
+  --border-subtle: #334155;
+  --border-default: #475569;
+  --border-focus: #60a5fa;
+  --border-strong: #64748b;
+
+  /* Text Hierarchy */
+  --text-title: #f1f5f9;
+  --text-body: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-subtle: #64748b;
+  --text-inverse: #0f172a;
+
+  /* Semantic Colors (adjusted for dark) */
+  --success-light: rgba(16, 185, 129, 0.15);
+  --success-bg: rgba(16, 185, 129, 0.1);
+  --warning-light: rgba(245, 158, 11, 0.15);
+  --warning-bg: rgba(245, 158, 11, 0.1);
+  --danger-light: rgba(239, 68, 68, 0.15);
+  --danger-bg: rgba(239, 68, 68, 0.1);
+
+  /* Shadows (lighter in dark mode) */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
+  --card-shadow: var(--shadow-sm);
+  --card-shadow-hover: var(--shadow-md);
 }
 
 @theme inline {
-  /* Map CSS custom properties into Tailwind design tokens */
+  /* Color Tokens */
   --color-surface: var(--bg-root);
   --color-surface-subtle: var(--bg-subtle);
+  --color-surface-elevated: var(--bg-elevated);
   --color-surface-border: var(--border-subtle);
+  --color-border-default: var(--border-default);
+  --color-border-focus: var(--border-focus);
 
   --color-text-title: var(--text-title);
   --color-text-body: var(--text-body);
   --color-text-muted: var(--text-muted);
+  --color-text-subtle: var(--text-subtle);
 
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
@@ -71,17 +201,46 @@
   --color-accent-subtle: var(--accent-subtle);
 
   --color-success: var(--success);
+  --color-success-light: var(--success-light);
   --color-warning: var(--warning);
+  --color-warning-light: var(--warning-light);
   --color-danger: var(--danger);
+  --color-danger-light: var(--danger-light);
 
   /* Typography */
   --font-sans: var(--font-inter);
+  --font-size-xs: var(--font-size-xs);
+  --font-size-sm: var(--font-size-sm);
+  --font-size-base: var(--font-size-base);
+  --font-size-lg: var(--font-size-lg);
+  --font-size-xl: var(--font-size-xl);
+  --font-size-2xl: var(--font-size-2xl);
+  --font-size-3xl: var(--font-size-3xl);
+  --font-size-4xl: var(--font-size-4xl);
 
-  /* Radii */
-  --radius-card: 0.75rem; /* ~rounded-xl */
-  --radius-pill: 999px;
+  /* Spacing */
+  --spacing-1: var(--space-1);
+  --spacing-2: var(--space-2);
+  --spacing-4: var(--space-4);
+  --spacing-6: var(--space-6);
+  --spacing-8: var(--space-8);
+  --spacing-12: var(--space-12);
+
+  /* Border Radius */
+  --radius-xs: var(--radius-xs);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-2xl: var(--radius-2xl);
+  --radius-full: var(--radius-full);
 
   /* Shadows */
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
   --shadow-card: var(--card-shadow);
 }
 
@@ -91,10 +250,24 @@ body {
   background: var(--bg-subtle);
   color: var(--text-body);
   font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", sans-serif;
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* COMPONENT PRIMITIVES
@@ -102,13 +275,14 @@ body {
 */
 
 @layer components {
-  /* Cards - Enhanced */
+  /* Cards - Refined with token system */
   .ui-card {
-    @apply rounded-xl border bg-surface text-text-body;
+    @apply border bg-surface text-text-body;
+    border-radius: var(--radius-lg);
     border-color: var(--border-subtle);
     box-shadow: var(--card-shadow);
+    background: var(--bg-elevated);
     transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
-    background: linear-gradient(to bottom, #ffffff, #fafbfc);
   }
 
   .ui-card-hover {
@@ -117,74 +291,126 @@ body {
 
   .ui-card-hover:hover {
     box-shadow: var(--card-shadow-hover);
-    border-color: var(--border-focus);
+    border-color: var(--border-default);
+  }
+
+  .ui-card-hover:focus-within {
+    outline: 2px solid var(--accent-500);
+    outline-offset: 2px;
   }
 
   .ui-card-neon {
-    box-shadow: var(--card-shadow), var(--neon-border);
+    box-shadow: var(--card-shadow), 0 0 0 1px rgba(59, 130, 246, 0.15);
   }
 
   .ui-card-neon:hover {
-    box-shadow: var(--card-shadow-hover), 0 0 0 1px rgba(59, 130, 246, 0.3);
+    box-shadow: var(--card-shadow-hover), 0 0 0 1px rgba(59, 130, 246, 0.25);
+  }
+
+  /* Glass morphism effect for preview panel */
+  .ui-card-glass {
+    background: var(--bg-overlay);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border-color: var(--border-subtle);
   }
 
   .ui-btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold tracking-tight;
-    @apply transition-all duration-200 ease-out;
-    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-press) 100%);
-    color: #ffffff;
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold;
+    border-radius: var(--radius-full);
+    background: linear-gradient(135deg, var(--accent-500) 0%, var(--accent-600) 100%);
+    color: var(--text-inverse);
     box-shadow: var(--btn-shadow);
     border: none;
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    letter-spacing: var(--letter-spacing-tight);
   }
 
-  .ui-btn-primary:hover {
-    background: linear-gradient(135deg, var(--accent-hover) 0%, var(--accent) 100%);
+  .ui-btn-primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, var(--accent-400) 0%, var(--accent-500) 100%);
     box-shadow: var(--btn-shadow-hover);
     transform: translateY(-1px);
   }
 
-  .ui-btn-primary:active {
-    background: linear-gradient(135deg, var(--accent-press) 0%, var(--accent) 100%);
-    transform: translateY(0);
+  .ui-btn-primary:active:not(:disabled) {
+    background: linear-gradient(135deg, var(--accent-600) 0%, var(--accent-700) 100%);
+    transform: scale(0.98) translateY(0);
     box-shadow: var(--btn-shadow);
   }
 
-  .ui-btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium tracking-tight;
-    @apply transition-all duration-200 ease-out;
-    @apply border;
-    border-color: rgba(59, 130, 246, 0.3);
-    color: var(--accent);
-    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.15), var(--shadow-xs);
-    background: rgba(255, 255, 255, 0.95);
+  .ui-btn-primary:focus-visible {
+    outline: 2px solid var(--accent-500);
+    outline-offset: 2px;
+    box-shadow: var(--focus-ring);
   }
 
-  .ui-btn-secondary:hover {
+  .ui-btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .ui-btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-medium;
+    border-radius: var(--radius-full);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    color: var(--accent-500);
+    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.1), var(--shadow-xs);
+    background: var(--bg-elevated);
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    letter-spacing: var(--letter-spacing-tight);
+  }
+
+  .ui-btn-secondary:hover:not(:disabled) {
     background: var(--accent-subtle);
     border-color: rgba(59, 130, 246, 0.4);
-    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.25), var(--shadow-sm);
+    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.2), var(--shadow-sm);
     transform: translateY(-1px);
   }
 
-  .ui-btn-secondary:active {
-    transform: translateY(0);
-    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.2), var(--shadow-xs);
+  .ui-btn-secondary:active:not(:disabled) {
+    transform: scale(0.98) translateY(0);
+    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.15), var(--shadow-xs);
+  }
+
+  .ui-btn-secondary:focus-visible {
+    outline: 2px solid var(--accent-500);
+    outline-offset: 2px;
+    box-shadow: var(--focus-ring);
+  }
+
+  .ui-btn-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   .ui-btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium tracking-tight;
-    @apply transition-all duration-200 ease-out;
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-medium;
+    border-radius: var(--radius-full);
     color: var(--text-muted);
     background: transparent;
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    letter-spacing: var(--letter-spacing-tight);
   }
 
-  .ui-btn-ghost:hover {
+  .ui-btn-ghost:hover:not(:disabled) {
     background: rgba(15, 23, 42, 0.06);
     color: var(--text-body);
   }
 
-  .ui-btn-ghost:active {
+  .ui-btn-ghost:active:not(:disabled) {
     background: rgba(15, 23, 42, 0.08);
+    transform: scale(0.98);
+  }
+
+  .ui-btn-ghost:focus-visible {
+    outline: 2px solid var(--accent-500);
+    outline-offset: 2px;
+    background: rgba(15, 23, 42, 0.04);
+  }
+
+  .ui-btn-ghost:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   /* Inputs - Enhanced */
@@ -215,28 +441,44 @@ body {
     outline: none;
   }
 
-  /* Badges - Enhanced */
+  /* Badges - Refined */
   .ui-badge {
-    @apply inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium;
-    @apply transition-all duration-150;
+    @apply inline-flex items-center border;
+    border-radius: var(--radius-full);
+    padding: var(--space-1) var(--space-3);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
     border-color: var(--border-subtle);
     color: var(--text-muted);
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(8px);
+    background: var(--bg-elevated);
+    transition: all 150ms ease-out;
   }
 
   .ui-badge-soft {
     background: linear-gradient(135deg, var(--accent-subtle) 0%, var(--accent-light) 100%);
-    border-color: rgba(59, 130, 246, 0.3);
-    color: var(--accent-press);
-    font-weight: 500;
+    border-color: rgba(59, 130, 246, 0.25);
+    color: var(--accent-600);
+    font-weight: var(--font-weight-medium);
   }
 
   .ui-badge-success {
-    border-color: rgba(16, 185, 129, 0.3);
+    border-color: rgba(16, 185, 129, 0.25);
     color: var(--success);
-    background: linear-gradient(135deg, var(--success-light) 0%, rgba(209, 250, 229, 0.8) 100%);
-    font-weight: 500;
+    background: var(--success-bg);
+    font-weight: var(--font-weight-medium);
+  }
+
+  /* Score badge for job cards */
+  .ui-badge-score {
+    @apply inline-flex flex-col items-center justify-center;
+    border-radius: var(--radius-md);
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    background: linear-gradient(135deg, var(--accent-500) 0%, var(--accent-600) 100%);
+    color: var(--text-inverse);
+    box-shadow: var(--shadow-sm);
+    min-width: 3.5rem;
   }
 
   /* Page shell helpers */
@@ -245,18 +487,42 @@ body {
   }
 
   .ui-page-content {
-    @apply mx-auto flex max-w-5xl flex-col gap-8 px-6 py-10 md:px-10 md:py-12;
+    @apply mx-auto flex max-w-5xl flex-col;
+    gap: var(--space-12);
+    padding: var(--space-8) var(--space-6);
+  }
+
+  @media (min-width: 768px) {
+    .ui-page-content {
+      padding: var(--space-12) var(--space-10);
+    }
   }
 
   .ui-page-header-title {
-    @apply text-3xl font-bold tracking-tight text-text-title md:text-4xl;
-    letter-spacing: -0.02em;
-    line-height: 1.2;
+    font-size: var(--font-size-4xl);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
+    color: var(--text-title);
+  }
+
+  @media (min-width: 768px) {
+    .ui-page-header-title {
+      font-size: var(--font-size-5xl);
+    }
   }
 
   .ui-page-header-subtitle {
-    @apply text-sm md:text-base text-text-muted leading-relaxed;
-    line-height: 1.6;
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-relaxed);
+    color: var(--text-muted);
+    margin-top: var(--space-2);
+  }
+
+  @media (min-width: 768px) {
+    .ui-page-header-subtitle {
+      font-size: var(--font-size-lg);
+    }
   }
 
   /* Filter chips / tags - Enhanced */
@@ -337,3 +603,4 @@ body {
     opacity: 1;
   }
 }
+
