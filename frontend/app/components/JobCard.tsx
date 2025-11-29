@@ -7,6 +7,7 @@ interface JobCardProps {
   status: JobStatus;
   postedAgo: string;
   salaryRange?: string;
+  skills?: string[];
 }
 
 const statusLabel: Record<JobStatus, string> = {
@@ -24,59 +25,80 @@ export function JobCard({
   status,
   postedAgo,
   salaryRange,
+  skills = [],
 }: JobCardProps) {
   const isPositive = status === "interview" || status === "offer";
   const isNegative = status === "rejected";
 
   return (
-    <article className="ui-card ui-card-hover ui-card-neon flex items-start justify-between gap-4 p-5 md:p-6">
-      <div className="flex flex-1 flex-col gap-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="space-y-1">
+    <article className="ui-card ui-card-hover ui-card-neon p-5 md:p-6">
+      <div className="flex flex-col gap-4">
+        {/* Header Section */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex-1 space-y-2">
             <h3 className="text-lg font-semibold tracking-tight text-text-title md:text-xl">
               {title}
             </h3>
-            <div className="flex flex-wrap items-center gap-2 text-xs md:text-[13px]">
+            <div className="flex flex-wrap items-center gap-2 text-xs md:text-sm">
               <span className="ui-badge ui-badge-soft">{company}</span>
               <span className="ui-badge">{location}</span>
-              {salaryRange ? (
-                <span className="ui-badge text-[11px] md:text-xs">
+              {salaryRange && (
+                <span className="ui-badge ui-badge-success text-[11px] md:text-xs font-semibold">
                   {salaryRange}
                 </span>
-              ) : null}
+              )}
             </div>
           </div>
-        </div>
 
-        <div className="flex flex-wrap items-center gap-2 text-xs text-text-muted md:text-[13px]">
-          <span className="rounded-full bg-surface-subtle px-2 py-0.5">
-            Posted {postedAgo}
+          {/* Status Badge */}
+          <span
+            className={[
+              "ui-badge text-[11px] md:text-xs w-fit",
+              isPositive ? "ui-badge-success" : "",
+              isNegative ? "border-danger/40 text-danger bg-red-50/80" : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+          >
+            {statusLabel[status]}
           </span>
-          <span className="h-1 w-1 rounded-full bg-slate-300" />
-          <span>Serious tracking · Fast updates · Auto-matching</span>
         </div>
-      </div>
 
-      <div className="flex flex-col items-end gap-3">
-        <span
-          className={[
-            "ui-badge text-[11px] md:text-xs",
-            isPositive ? "ui-badge-success" : "",
-            isNegative ? "border-danger/40 text-danger bg-red-50/80" : "",
-          ]
-            .filter(Boolean)
-            .join(" ")}
-        >
-          {statusLabel[status]}
-        </span>
+        {/* Skills Tags */}
+        {skills.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2">
+            {skills.slice(0, 4).map((skill, idx) => (
+              <span
+                key={idx}
+                className="ui-badge text-[10px] md:text-xs border-accent/20 text-accent bg-accent-subtle/50"
+              >
+                {skill}
+              </span>
+            ))}
+            {skills.length > 4 && (
+              <span className="ui-badge text-[10px] md:text-xs text-text-muted">
+                +{skills.length - 4} more
+              </span>
+            )}
+          </div>
+        )}
 
-        <div className="flex items-center gap-2">
-          <button className="ui-btn-ghost hidden text-xs md:inline-flex">
-            Notes
-          </button>
-          <button className="ui-btn-secondary text-xs md:text-sm">
-            Open board
-          </button>
+        {/* Footer Section */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-2 border-t border-surface-border">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-text-muted">
+            <span className="rounded-full bg-surface-subtle px-2.5 py-1">
+              Posted {postedAgo}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button className="ui-btn-ghost text-xs md:text-sm">
+              View Details
+            </button>
+            <button className="ui-btn-primary text-xs md:text-sm">
+              Apply Now
+            </button>
+          </div>
         </div>
       </div>
     </article>
