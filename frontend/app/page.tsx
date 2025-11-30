@@ -1,6 +1,6 @@
-import { HeroSection } from "./components/HeroSection";
-import { FeatureGrid } from "./components/FeatureGrid";
-import { HowItWorks } from "./components/HowItWorks";
+import { HeroSection } from "./components/pages/HeroSection";
+import { FeatureGrid } from "./components/pages/FeatureGrid";
+import { HowItWorks } from "./components/pages/HowItWorks";
 
 export default function Home() {
   return (

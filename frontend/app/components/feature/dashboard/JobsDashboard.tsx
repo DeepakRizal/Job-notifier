@@ -1,11 +1,16 @@
 "use client";
 
-import { JobCard } from "./JobCard";
+import { JobCard } from "../jobs/JobCard";
 import { Search, Filter, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 
 // Role categories
-type JobRole = "Frontend Developer" | "Backend Developer" | "Full Stack Developer" | "Mobile Developer" | "DevOps Engineer";
+type JobRole =
+  | "Frontend Developer"
+  | "Backend Developer"
+  | "Full Stack Developer"
+  | "Mobile Developer"
+  | "DevOps Engineer";
 
 // Dummy job data
 const dummyJobs = [
@@ -20,7 +25,8 @@ const dummyJobs = [
     salaryRange: "$120k - $160k",
     role: "Frontend Developer" as JobRole,
     skills: ["React", "TypeScript", "Node.js"],
-    description: "Looking for an experienced React developer to join our growing team.",
+    description:
+      "Looking for an experienced React developer to join our growing team.",
   },
   {
     id: "2",
@@ -197,15 +203,19 @@ export function JobsDashboard() {
                   Filter by role
                 </span>
                 {selectedFilter && (
-                  <span className="ui-badge text-[10px]">
-                    {selectedFilter}
-                  </span>
+                  <span className="ui-badge text-[10px]">{selectedFilter}</span>
                 )}
               </div>
               {isFilterOpen ? (
-                <ChevronUp size={18} className="text-text-muted flex-shrink-0" />
+                <ChevronUp
+                  size={18}
+                  className="text-text-muted flex-shrink-0"
+                />
               ) : (
-                <ChevronDown size={18} className="text-text-muted flex-shrink-0" />
+                <ChevronDown
+                  size={18}
+                  className="text-text-muted flex-shrink-0"
+                />
               )}
             </button>
           </div>
@@ -246,9 +256,14 @@ export function JobsDashboard() {
       {/* Results Count */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-text-muted">
-          <span className="font-semibold text-text-title">{filteredJobs.length}</span>{" "}
-          {filteredJobs.length === 1 ? "newly posted job" : "newly posted jobs"} found
-          <span className="ml-2 text-xs text-text-muted">· Top jobs are the newest</span>
+          <span className="font-semibold text-text-title">
+            {filteredJobs.length}
+          </span>{" "}
+          {filteredJobs.length === 1 ? "newly posted job" : "newly posted jobs"}{" "}
+          found
+          <span className="ml-2 text-xs text-text-muted">
+            · Top jobs are the newest
+          </span>
         </p>
       </div>
 
@@ -284,5 +299,3 @@ export function JobsDashboard() {
     </div>
   );
 }
-
-

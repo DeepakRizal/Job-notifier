@@ -1,5 +1,5 @@
-import { SkillsPreferencesPanel } from "../components/SkillsPreferencesPanel";
-import { AccountSettingsPanel } from "../components/AccountSettingsPanel";
+import { SkillsPreferencesPanel } from "../components/feature/user/SkillsPreferencesPanel";
+import { AccountSettingsPanel } from "../components/feature/auth/AccountSettingsPanel";
 
 export default function SettingsPage() {
   return (
@@ -9,5 +9,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
-
