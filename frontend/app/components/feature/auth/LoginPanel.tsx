@@ -2,6 +2,8 @@
 
 import { apiFetch } from "@/app/lib/api";
 import { isApiError } from "@/app/lib/errors";
+import { AuthResponse } from "@/types/user";
+
 import { useRouter } from "next/navigation";
 
 import { useForm } from "react-hook-form";
@@ -23,10 +25,10 @@ export function LoginPanel() {
 
   const onSubmit = async (data: Inputs) => {
     try {
-      const response = await apiFetch("/auth/login", {
+      const response = (await apiFetch<AuthResponse>("/auth/login", {
         method: "POST",
         data: { email: data.email, password: data.password },
-      });
+      })) as AuthResponse;
 
       if (response.success) {
         router.push("/dashboard");

@@ -159,7 +159,7 @@ const roleFilters: JobRole[] = [
 export function JobsDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilter, setSelectedFilter] = useState<JobRole | null>(null);
-  const [isFilterOpen, setIsFilterOpen] = useState(true);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const filteredJobs = dummyJobs.filter((job) => {
     const matchesSearch =
@@ -195,7 +195,7 @@ export function JobsDashboard() {
             {/* Filter Toggle Button */}
             <button
               onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className="flex items-center justify-between gap-3 rounded-lg border border-surface-border bg-surface px-4 py-2.5 transition-colors hover:bg-surface-subtle sm:flex-shrink-0"
+              className="flex items-center justify-between gap-3 rounded-lg border border-surface-border bg-surface px-4 py-2.5 transition-colors hover:bg-surface-subtle sm:shrink-0"
             >
               <div className="flex items-center gap-2">
                 <Filter size={16} className="text-text-muted" />
@@ -207,15 +207,9 @@ export function JobsDashboard() {
                 )}
               </div>
               {isFilterOpen ? (
-                <ChevronUp
-                  size={18}
-                  className="text-text-muted flex-shrink-0"
-                />
+                <ChevronUp size={18} className="text-text-muted shrink-0" />
               ) : (
-                <ChevronDown
-                  size={18}
-                  className="text-text-muted flex-shrink-0"
-                />
+                <ChevronDown size={18} className="text-text-muted shrink-0" />
               )}
             </button>
           </div>

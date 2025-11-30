@@ -4,10 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
+import { useUser } from "@/app/hooks/useUser";
 
 export function Header() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const { user } = useUser();
 
   const isActive = (path: string) => pathname === path;
 
@@ -20,7 +23,7 @@ export function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-surface-border bg-surface/95 backdrop-blur-sm supports-[backdrop-filter]:bg-surface/80">
+      <header className="sticky top-0 z-50 border-b border-surface-border bg-surface/95 backdrop-blur-sm supports-backdrop-filter:bg-surface/80">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 md:px-6 lg:px-8">
           {/* Logo */}
           <Link
@@ -28,7 +31,7 @@ export function Header() {
             className="group flex items-center gap-2.5 transition-opacity hover:opacity-80"
             onClick={() => setMobileMenuOpen(false)}
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-accent to-accent-press text-[13px] font-semibold text-white shadow-sm">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-accent to-accent-press text-[13px] font-semibold text-white shadow-sm">
               JN
             </div>
             <div className="leading-tight">
@@ -60,27 +63,31 @@ export function Header() {
             >
               Settings
             </Link>
-            <div className="mx-1 h-4 w-px bg-surface-border" />
-            <Link
-              href="/login"
-              className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-                isActive("/login")
-                  ? "bg-accent/10 text-accent"
-                  : "text-text-muted hover:bg-surface-subtle hover:text-text-title"
-              }`}
-            >
-              Login
-            </Link>
-            <Link
-              href="/register"
-              className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-                isActive("/register")
-                  ? "bg-accent/10 text-accent"
-                  : "text-text-muted hover:bg-surface-subtle hover:text-text-title"
-              }`}
-            >
-              Register
-            </Link>
+            {!user && (
+              <Link
+                href="/login"
+                className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                  isActive("/login")
+                    ? "bg-accent/10 text-accent"
+                    : "text-text-muted hover:bg-surface-subtle hover:text-text-title"
+                }`}
+              >
+                Login
+              </Link>
+            )}
+
+            {!user && (
+              <Link
+                href="/register"
+                className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                  isActive("/register")
+                    ? "bg-accent/10 text-accent"
+                    : "text-text-muted hover:bg-surface-subtle hover:text-text-title"
+                }`}
+              >
+                Register
+              </Link>
+            )}
           </nav>
 
           {/* Mobile Menu Button */}
@@ -122,4 +129,3 @@ export function Header() {
     </>
   );
 }
-

@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { Header } from "./components/layout/Header";
 import { Footer } from "./components/layout/Footer";
 import "./globals.css";
+import AuthGuard from "./components/feature/auth/AuthGuard";
 
 // Primary SaaS font: Inter
 const inter = Inter({

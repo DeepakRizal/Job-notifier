@@ -23,7 +23,7 @@ export function HeroSection() {
             <div className="max-w-3xl mx-auto text-center lg:text-left">
               <h1 className="text-4xl sm:text-5xl font-extrabold leading-tight tracking-tight text-slate-900">
                 Be the first{" "}
-                <span className="bg-gradient-to-r from-[#3B82F6] to-[#2563EB] bg-clip-text text-transparent">
+                <span className="bg-linear-to-r from-[#3B82F6] to-[#2563EB] bg-clip-text text-transparent">
                   to apply
                 </span>
               </h1>

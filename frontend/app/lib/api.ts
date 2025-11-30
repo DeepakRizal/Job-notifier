@@ -4,7 +4,10 @@ import { ApiError } from "./errors";
 export const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
 
-export async function apiFetch(path: string, opts: AxiosRequestConfig = {}) {
+export async function apiFetch<T = unknown>(
+  path: string,
+  opts: AxiosRequestConfig = {}
+) {
   const url = `${API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
 
   try {
@@ -18,7 +21,7 @@ export async function apiFetch(path: string, opts: AxiosRequestConfig = {}) {
       ...opts,
     });
 
-    return res.data;
+    return res.data as T;
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {
       const status = err.response?.status;
