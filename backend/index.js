@@ -25,6 +25,7 @@ app.use(
   cors({
     origin: FRONTEND,
     frontend: true,
+    credentials: true,
   })
 );
 
