@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 
 //Populating environment variables
 dotenv.config({ path: "../.env" });
@@ -11,11 +12,21 @@ import jobRouter from "./routes/jobRoutes.js";
 import authMiddleware from "./middlewares/auth.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 
+const FRONTEND = process.env.FRONTEND_URL || "http://localhost:3000";
+
 //Initialising express app
 const app = express();
 
 //built in middleware to parse request body
 app.use(express.json());
+
+//enabling cross origin request for the frontend
+app.use(
+  cors({
+    origin: FRONTEND,
+    frontend: true,
+  })
+);
 
 // middleware to parse cookies
 app.use(cookieParser());
