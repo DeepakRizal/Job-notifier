@@ -12,15 +12,15 @@
   /* ============================================
      COLOR TOKENS - Light Mode
      ============================================ */
-  
+
   /* Brand Accent - Refined Blue Palette */
   --accent-50: #eff6ff;
   --accent-100: #dbeafe;
   --accent-200: #bfdbfe;
   --accent-300: #93c5fd;
   --accent-400: #60a5fa;
-  --accent-500: #3b82f6;  /* Primary brand */
-  --accent-600: #2563eb;  /* Press/Active */
+  --accent-500: #3b82f6; /* Primary brand */
+  --accent-600: #2563eb; /* Press/Active */
   --accent-700: #1d4ed8;
   --accent-900: #1e3a8a;
 
@@ -44,11 +44,11 @@
   --border-strong: #94a3b8;
 
   /* Text Hierarchy */
-  --text-title: #0f172a;      /* Headings */
-  --text-body: #475569;        /* Body text */
-  --text-muted: #64748b;       /* Secondary text */
-  --text-subtle: #94a3b8;      /* Tertiary text */
-  --text-inverse: #ffffff;     /* Text on dark */
+  --text-title: #0f172a; /* Headings */
+  --text-body: #475569; /* Body text */
+  --text-muted: #64748b; /* Secondary text */
+  --text-subtle: #94a3b8; /* Tertiary text */
+  --text-inverse: #ffffff; /* Text on dark */
 
   /* Semantic Colors */
   --success: #10b981;
@@ -64,58 +64,62 @@
   /* ============================================
      SPACING SCALE
      ============================================ */
-  --space-1: 0.25rem;   /* 4px */
-  --space-2: 0.5rem;    /* 8px */
-  --space-3: 0.75rem;   /* 12px */
-  --space-4: 1rem;      /* 16px */
-  --space-5: 1.25rem;   /* 20px */
-  --space-6: 1.5rem;    /* 24px */
-  --space-8: 2rem;      /* 32px */
-  --space-10: 2.5rem;   /* 40px */
-  --space-12: 3rem;     /* 48px */
-  --space-16: 4rem;     /* 64px */
-  --space-20: 5rem;     /* 80px */
+  --space-1: 0.25rem; /* 4px */
+  --space-2: 0.5rem; /* 8px */
+  --space-3: 0.75rem; /* 12px */
+  --space-4: 1rem; /* 16px */
+  --space-5: 1.25rem; /* 20px */
+  --space-6: 1.5rem; /* 24px */
+  --space-8: 2rem; /* 32px */
+  --space-10: 2.5rem; /* 40px */
+  --space-12: 3rem; /* 48px */
+  --space-16: 4rem; /* 64px */
+  --space-20: 5rem; /* 80px */
 
   /* ============================================
      BORDER RADIUS SCALE
      ============================================ */
-  --radius-xs: 0.25rem;    /* 4px */
-  --radius-sm: 0.375rem;   /* 6px */
-  --radius-md: 0.5rem;    /* 8px */
-  --radius-lg: 0.75rem;   /* 12px */
-  --radius-xl: 1rem;      /* 16px */
-  --radius-2xl: 1.5rem;    /* 24px */
-  --radius-full: 9999px;   /* Pill */
+  --radius-xs: 0.25rem; /* 4px */
+  --radius-sm: 0.375rem; /* 6px */
+  --radius-md: 0.5rem; /* 8px */
+  --radius-lg: 0.75rem; /* 12px */
+  --radius-xl: 1rem; /* 16px */
+  --radius-2xl: 1.5rem; /* 24px */
+  --radius-full: 9999px; /* Pill */
 
   /* ============================================
      SHADOW DEPTH SCALE
      ============================================ */
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 8px 10px -6px rgba(0, 0, 0, 0.1);
   --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 
   /* Component-specific shadows */
   --card-shadow: var(--shadow-sm);
   --card-shadow-hover: var(--shadow-md);
   --btn-shadow: var(--shadow-xs);
-  --btn-shadow-hover: 0 4px 6px -1px rgba(59, 130, 246, 0.25), 0 2px 4px -2px rgba(59, 130, 246, 0.15);
+  --btn-shadow-hover: 0 4px 6px -1px rgba(59, 130, 246, 0.25),
+    0 2px 4px -2px rgba(59, 130, 246, 0.15);
   --focus-ring: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 0 0 1px var(--accent-500);
 
   /* ============================================
      TYPOGRAPHY SCALE
      ============================================ */
-  --font-size-xs: 0.75rem;      /* 12px */
-  --font-size-sm: 0.875rem;     /* 14px */
-  --font-size-base: 1rem;       /* 16px */
-  --font-size-lg: 1.125rem;     /* 18px */
-  --font-size-xl: 1.25rem;      /* 20px */
-  --font-size-2xl: 1.5rem;      /* 24px */
-  --font-size-3xl: 1.875rem;    /* 30px */
-  --font-size-4xl: 2.25rem;     /* 36px */
-  --font-size-5xl: 3rem;        /* 48px */
+  --font-size-xs: 0.75rem; /* 12px */
+  --font-size-sm: 0.875rem; /* 14px */
+  --font-size-base: 1rem; /* 16px */
+  --font-size-lg: 1.125rem; /* 18px */
+  --font-size-xl: 1.25rem; /* 20px */
+  --font-size-2xl: 1.5rem; /* 24px */
+  --font-size-3xl: 1.875rem; /* 30px */
+  --font-size-4xl: 2.25rem; /* 36px */
+  --font-size-5xl: 3rem; /* 48px */
 
   --font-weight-normal: 400;
   --font-weight-medium: 500;
@@ -174,8 +178,10 @@
   /* Shadows (lighter in dark mode) */
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
   --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4),
+    0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4),
+    0 4px 6px -4px rgba(0, 0, 0, 0.3);
   --card-shadow: var(--shadow-sm);
   --card-shadow-hover: var(--shadow-md);
 }
@@ -318,7 +324,11 @@ body {
   .ui-btn-primary {
     @apply inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold;
     border-radius: var(--radius-full);
-    background: linear-gradient(135deg, var(--accent-500) 0%, var(--accent-600) 100%);
+    background: linear-gradient(
+      135deg,
+      var(--accent-500) 0%,
+      var(--accent-600) 100%
+    );
     color: var(--text-inverse);
     box-shadow: var(--btn-shadow);
     border: none;
@@ -327,13 +337,21 @@ body {
   }
 
   .ui-btn-primary:hover:not(:disabled) {
-    background: linear-gradient(135deg, var(--accent-400) 0%, var(--accent-500) 100%);
+    background: linear-gradient(
+      135deg,
+      var(--accent-400) 0%,
+      var(--accent-500) 100%
+    );
     box-shadow: var(--btn-shadow-hover);
     transform: translateY(-1px);
   }
 
   .ui-btn-primary:active:not(:disabled) {
-    background: linear-gradient(135deg, var(--accent-600) 0%, var(--accent-700) 100%);
+    background: linear-gradient(
+      135deg,
+      var(--accent-600) 0%,
+      var(--accent-700) 100%
+    );
     transform: scale(0.98) translateY(0);
     box-shadow: var(--btn-shadow);
   }
@@ -434,9 +452,7 @@ body {
 
   .ui-input:focus {
     border-color: var(--accent);
-    box-shadow:
-      0 0 0 3px rgba(59, 130, 246, 0.1),
-      0 0 0 1px var(--accent),
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 0 0 1px var(--accent),
       var(--shadow-sm);
     outline: none;
   }
@@ -455,7 +471,11 @@ body {
   }
 
   .ui-badge-soft {
-    background: linear-gradient(135deg, var(--accent-subtle) 0%, var(--accent-light) 100%);
+    background: linear-gradient(
+      135deg,
+      var(--accent-subtle) 0%,
+      var(--accent-light) 100%
+    );
     border-color: rgba(59, 130, 246, 0.25);
     color: var(--accent-600);
     font-weight: var(--font-weight-medium);
@@ -475,7 +495,11 @@ body {
     padding: var(--space-2) var(--space-3);
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-semibold);
-    background: linear-gradient(135deg, var(--accent-500) 0%, var(--accent-600) 100%);
+    background: linear-gradient(
+      135deg,
+      var(--accent-500) 0%,
+      var(--accent-600) 100%
+    );
     color: var(--text-inverse);
     box-shadow: var(--shadow-sm);
     min-width: 3.5rem;
@@ -541,13 +565,21 @@ body {
 
   .ui-chip-active {
     @apply border-transparent text-white;
-    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-press) 100%);
+    background: linear-gradient(
+      135deg,
+      var(--accent) 0%,
+      var(--accent-press) 100%
+    );
     box-shadow: var(--shadow-sm), 0 0 0 1px rgba(59, 130, 246, 0.2);
     font-weight: 600;
   }
 
   .ui-chip-active:hover {
-    background: linear-gradient(135deg, var(--accent-hover) 0%, var(--accent) 100%);
+    background: linear-gradient(
+      135deg,
+      var(--accent-hover) 0%,
+      var(--accent) 100%
+    );
     box-shadow: var(--shadow-md), 0 0 0 1px rgba(59, 130, 246, 0.3);
   }
 
@@ -603,4 +635,3 @@ body {
     opacity: 1;
   }
 }
-

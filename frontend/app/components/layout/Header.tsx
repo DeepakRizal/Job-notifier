@@ -12,6 +12,8 @@ export function Header() {
 
   const { user } = useUser();
 
+  console.log(user);
+
   const isActive = (path: string) => pathname === path;
 
   const navLinks = [
@@ -43,26 +45,31 @@ export function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1">
-            <Link
-              href="/dashboard"
-              className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-                isActive("/dashboard")
-                  ? "bg-accent/10 text-accent"
-                  : "text-text-muted hover:bg-surface-subtle hover:text-text-title"
-              }`}
-            >
-              Dashboard
-            </Link>
-            <Link
-              href="/settings"
-              className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-                isActive("/settings")
-                  ? "bg-accent/10 text-accent"
-                  : "text-text-muted hover:bg-surface-subtle hover:text-text-title"
-              }`}
-            >
-              Settings
-            </Link>
+            {user && (
+              <Link
+                href="/dashboard"
+                className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                  isActive("/dashboard")
+                    ? "bg-accent/10 text-accent"
+                    : "text-text-muted hover:bg-surface-subtle hover:text-text-title"
+                }`}
+              >
+                Dashboard
+              </Link>
+            )}
+            {user && (
+              <Link
+                href="/settings"
+                className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                  isActive("/settings")
+                    ? "bg-accent/10 text-accent"
+                    : "text-text-muted hover:bg-surface-subtle hover:text-text-title"
+                }`}
+              >
+                Settings
+              </Link>
+            )}
+
             {!user && (
               <Link
                 href="/login"
