@@ -1,4 +1,4 @@
-import { LoginPanel } from "../components/LoginPanel";
+import { LoginPanel } from "../components/feature/auth/LoginPanel";
 
 export default function LoginPage() {
   return (
@@ -7,5 +7,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
-

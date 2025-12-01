@@ -67,7 +67,8 @@ export const loginUser = async (req, res, next) => {
   //checking if email and password are provided by the user
   if (!email || !password) {
     return res.status(400).json({
-      error: "Email and password are required",
+      success: false,
+      message: "Email and password are required",
     });
   }
 
@@ -77,7 +78,8 @@ export const loginUser = async (req, res, next) => {
   // checking if the user is valid and user is correct
   if (!user || !(await user.comparePassword(password))) {
     return res.status(400).json({
-      error: "Invalid credentials",
+      success: false,
+      message: "Invalid credentials",
     });
   }
 
@@ -90,8 +92,10 @@ export const loginUser = async (req, res, next) => {
   //sending cookie to the response
   res.cookie("token", token, {
     httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 24 * 60 * 60 * 1000,
   });
-
   // lastly sending the response
   res.status(200).json({
     success: true,

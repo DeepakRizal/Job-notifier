@@ -1,4 +1,4 @@
-import { JobsDashboard } from "../components/JobsDashboard";
+import { JobsDashboard } from "../components/feature/dashboard/JobsDashboard";
 
 export default function DashboardPage() {
   return (
