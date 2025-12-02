@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { apiFetch } from "../lib/api";
+import { apiFetch } from "../../lib/api";
 import { AuthResponse, User } from "@/types/user";
-import { isApiError } from "../lib/errors";
+import { isApiError } from "../../lib/errors";
 
 export function useUser() {
   const [user, setUser] = useState<User | null>(null);
@@ -18,6 +18,9 @@ export function useUser() {
       const data = (await apiFetch<AuthResponse>("/auth/me", {
         method: "GET",
       })) as AuthResponse;
+
+      console.log(data.user);
+
       setUser(data?.user);
     } catch (e: unknown) {
       setUser(null);

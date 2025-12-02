@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { Header } from "./components/layout/Header";
 import { Footer } from "./components/layout/Footer";
 import "./globals.css";
+import UserProvider from "./providers/userProvider";
 
 // Primary SaaS font: Inter
 const inter = Inter({
@@ -29,7 +30,7 @@ export default function RootLayout({
           <Header />
           {/* <-- change here: make main a centering flex container */}
           <main className="flex-1 flex items-center justify-center">
-            {children}
+            <UserProvider>{children}</UserProvider>
           </main>
           <Footer />
         </div>

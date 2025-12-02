@@ -2,26 +2,44 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Menu, X } from "lucide-react";
-import { useUser } from "@/app/hooks/useUser";
+
+import { apiFetch } from "@/lib/api";
+import { useUserStore } from "@/lib/stores/user-store";
+import { useShallow } from "zustand/shallow";
 
 export function Header() {
   const pathname = usePathname();
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const { user } = useUser();
+  const { user, loading, setUser } = useUserStore(
+    useShallow((s) => ({
+      user: s.user,
+      loading: s.loading,
+      setUser: s.setUser,
+    }))
+  );
 
-  console.log(user);
+  if (loading) return <nav>Loading...</nav>;
 
   const isActive = (path: string) => pathname === path;
 
-  const navLinks = [
-    { href: "/dashboard", label: "Dashboard" },
-    { href: "/settings", label: "Settings" },
-    { href: "/login", label: "Login" },
-    { href: "/register", label: "Register" },
-  ];
+  const handleLogout = async () => {
+    try {
+      await apiFetch("/auth/logout", {
+        method: "POST",
+      });
+
+      setUser(null);
+
+      router.push("/login");
+      setMobileMenuOpen(false);
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
+  };
 
   return (
     <>
@@ -70,6 +88,16 @@ export function Header() {
               </Link>
             )}
 
+            {user && (
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="rounded-lg px-3 py-1.5 text-sm font-medium text-text-muted hover:bg-surface-subtle hover:text-text-title transition-colors"
+              >
+                Logout
+              </button>
+            )}
+
             {!user && (
               <Link
                 href="/login"
@@ -116,20 +144,66 @@ export function Header() {
       {mobileMenuOpen && (
         <div className="fixed top-[57px] left-0 right-0 z-50 md:hidden border-b border-surface-border bg-surface shadow-md animate-[slideDown_200ms_ease-out]">
           <nav className="mx-auto max-w-7xl px-4 py-3 space-y-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className={`block rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                  isActive(link.href)
-                    ? "bg-accent/10 text-accent"
-                    : "text-text-muted hover:bg-surface-subtle hover:text-text-title"
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {user && (
+              <>
+                <Link
+                  href="/dashboard"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`block rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                    isActive("/dashboard")
+                      ? "bg-accent/10 text-accent"
+                      : "text-text-muted hover:bg-surface-subtle hover:text-text-title"
+                  }`}
+                >
+                  Dashboard
+                </Link>
+                <Link
+                  href="/settings"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`block rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                    isActive("/settings")
+                      ? "bg-accent/10 text-accent"
+                      : "text-text-muted hover:bg-surface-subtle hover:text-text-title"
+                  }`}
+                >
+                  Settings
+                </Link>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="block w-full text-left rounded-lg px-3 py-2.5 text-sm font-medium text-text-muted hover:bg-surface-subtle hover:text-text-title transition-colors"
+                >
+                  Logout
+                </button>
+              </>
+            )}
+
+            {!user && (
+              <>
+                <Link
+                  href="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`block rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                    isActive("/login")
+                      ? "bg-accent/10 text-accent"
+                      : "text-text-muted hover:bg-surface-subtle hover:text-text-title"
+                  }`}
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/register"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`block rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                    isActive("/register")
+                      ? "bg-accent/10 text-accent"
+                      : "text-text-muted hover:bg-surface-subtle hover:text-text-title"
+                  }`}
+                >
+                  Register
+                </Link>
+              </>
+            )}
           </nav>
         </div>
       )}

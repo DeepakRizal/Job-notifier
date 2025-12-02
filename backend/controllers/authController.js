@@ -103,6 +103,20 @@ export const loginUser = async (req, res, next) => {
   });
 };
 
+// logout handler - clears the auth cookie
+export const logoutUser = (req, res, next) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+  });
+
+  return res.status(200).json({
+    success: true,
+    message: "Logged out successfully",
+  });
+};
+
 // getting the login user
 export const getMe = async (req, res, next) => {
   //destructure the user from the request

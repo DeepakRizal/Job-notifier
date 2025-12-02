@@ -1,7 +1,7 @@
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
-import { isApiError } from "@/app/lib/errors";
+import { apiFetch } from "@/lib/api";
+import { isApiError } from "@/lib/errors";
 import { AuthResponse } from "@/types/user";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
