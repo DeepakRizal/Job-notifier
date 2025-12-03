@@ -4,6 +4,7 @@ import { Header } from "./components/layout/Header";
 import { Footer } from "./components/layout/Footer";
 import "./globals.css";
 import UserProvider from "./providers/userProvider";
+import QueryProvider from "./providers/QueryProvider";
 
 // Primary SaaS font: Inter
 const inter = Inter({
@@ -30,7 +31,9 @@ export default function RootLayout({
           <Header />
           {/* <-- change here: make main a centering flex container */}
           <main className="flex-1 flex items-center justify-center">
-            <UserProvider>{children}</UserProvider>
+            <UserProvider>
+              <QueryProvider>{children}</QueryProvider>
+            </UserProvider>
           </main>
           <Footer />
         </div>

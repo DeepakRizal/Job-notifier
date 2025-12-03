@@ -136,12 +136,55 @@ export const test = async (req, res, next) => {
 
 //Handler to get all jobs
 export const getAllJobs = async (req, res, next) => {
-  const jobs = await Job.find({});
+  try {
+    const q = (req.query.q || "").trim();
+    const role = req.query.role || null;
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, parseInt(req.query.limit, 10) || 20);
 
-  res.status(200).json({
-    success: true,
-    jobs,
-  });
+    console.log(req.query);
+
+    const filter = {};
+
+    if (role) {
+      filter.role = role;
+    }
+
+    if (q) {
+      const regex = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+
+      filter.$or = [
+        { title: regex },
+        { company: regex },
+        { location: regex },
+        { skills: { $in: [regex] } },
+      ];
+    }
+
+    console.log(filter);
+
+    const total = await Job.countDocuments(filter);
+    console.log(total);
+
+    const sort = { createdAt: -1 };
+
+    const jobs = await Job.find(filter)
+      .sort(sort)
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean()
+      .exec();
+
+    return res.status(200).json({
+      success: true,
+      jobs,
+      page,
+      limit,
+      total,
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 export const getMyJobs = async (req, res, next) => {
