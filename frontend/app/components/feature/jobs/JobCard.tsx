@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 type JobStatus = "applied" | "interview" | "offer" | "rejected" | "saved";
 
 interface JobCardProps {
@@ -31,6 +33,9 @@ export function JobCard({
 }: JobCardProps) {
   const isPositive = status === "interview" || status === "offer";
   const isNegative = status === "rejected";
+  const [showAllSkills, setShowAllSkills] = useState(false);
+
+  const visibleSkills = showAllSkills ? skills : skills.slice(0, 4);
 
   return (
     <article className="ui-card ui-card-hover ui-card-neon p-5 md:p-6">
@@ -69,7 +74,7 @@ export function JobCard({
         {/* Skills Tags */}
         {skills.length > 0 && (
           <div className="flex flex-wrap items-center gap-2">
-            {skills.slice(0, 4).map((skill, idx) => (
+            {visibleSkills.map((skill, idx) => (
               <span
                 key={idx}
                 className="ui-badge text-[10px] md:text-xs border-accent/20 text-accent bg-accent-subtle/50"
@@ -78,9 +83,13 @@ export function JobCard({
               </span>
             ))}
             {skills.length > 4 && (
-              <span className="ui-badge text-[10px] md:text-xs text-text-muted">
-                +{skills.length - 4} more
-              </span>
+              <button
+                type="button"
+                onClick={() => setShowAllSkills((prev) => !prev)}
+                className="ui-badge text-[10px] md:text-xs text-text-muted hover:bg-surface-subtle transition-colors"
+              >
+                {showAllSkills ? "Show less" : `+${skills.length - 4} more`}
+              </button>
             )}
           </div>
         )}
@@ -102,10 +111,7 @@ export function JobCard({
             >
               View Details
             </a>
-            <a
-              href={url}
-              className="ui-btn-primary text-xs md:text-sm"
-            >
+            <a href={url} className="ui-btn-primary text-xs md:text-sm">
               Apply Now
             </a>
           </div>
@@ -114,5 +120,3 @@ export function JobCard({
     </article>
   );
 }
-
-

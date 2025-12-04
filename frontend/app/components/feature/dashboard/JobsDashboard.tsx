@@ -5,6 +5,7 @@ import { Search, Filter, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import { fetchJobs } from "@/lib/queries/jobs";
 import { JobDocument } from "@/types/job";
+import ArcLoader from "../../layout/ArcLoader";
 
 type JobStatus = "applied" | "interview" | "offer" | "rejected" | "saved";
 
@@ -62,6 +63,8 @@ export function JobsDashboard() {
     staleTime: 30_000,
   });
 
+  console.log(jobs);
+
   const filteredJobs = (jobs ?? []).map((job: JobDocument) => {
     const minExp = job.experience?.min ?? job.minExperience ?? null;
     const maxExp = job.experience?.max ?? job.maxExperience ?? null;
@@ -76,7 +79,7 @@ export function JobsDashboard() {
       id: job._id,
       title: job.title,
       company: job.company,
-      location: job.location || "Remote",
+      location: job.location,
       status: "saved" as JobStatus,
       postedAgo: timeSince(job.createdAt ?? job.discoveredAt),
       matchScore: 0,
@@ -90,7 +93,7 @@ export function JobsDashboard() {
   });
 
   if (isLoading) {
-    return <div>Loading jobs...</div>;
+    return <ArcLoader />;
   }
 
   if (error) {
