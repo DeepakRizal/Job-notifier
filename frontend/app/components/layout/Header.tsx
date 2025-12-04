@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Menu, X } from "lucide-react";
@@ -22,7 +22,7 @@ export function Header() {
     }))
   );
 
-  if (loading) return <nav>Loading...</nav>;
+  const isLoading = loading;
 
   const isActive = (path: string) => pathname === path;
 
@@ -63,7 +63,7 @@ export function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1">
-            {user && (
+            {!isLoading && user && (
               <Link
                 href="/dashboard"
                 className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
@@ -75,7 +75,7 @@ export function Header() {
                 Dashboard
               </Link>
             )}
-            {user && (
+            {!isLoading && user && (
               <Link
                 href="/settings"
                 className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
@@ -88,7 +88,7 @@ export function Header() {
               </Link>
             )}
 
-            {user && (
+            {!isLoading && user && (
               <button
                 type="button"
                 onClick={handleLogout}
@@ -98,7 +98,7 @@ export function Header() {
               </button>
             )}
 
-            {!user && (
+            {!isLoading && !user && (
               <Link
                 href="/login"
                 className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
@@ -111,7 +111,7 @@ export function Header() {
               </Link>
             )}
 
-            {!user && (
+            {!isLoading && !user && (
               <Link
                 href="/register"
                 className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
@@ -144,7 +144,7 @@ export function Header() {
       {mobileMenuOpen && (
         <div className="fixed top-[57px] left-0 right-0 z-50 md:hidden border-b border-surface-border bg-surface shadow-md animate-[slideDown_200ms_ease-out]">
           <nav className="mx-auto max-w-7xl px-4 py-3 space-y-1">
-            {user && (
+            {!isLoading && user && (
               <>
                 <Link
                   href="/dashboard"
@@ -178,7 +178,7 @@ export function Header() {
               </>
             )}
 
-            {!user && (
+            {!isLoading && !user && (
               <>
                 <Link
                   href="/login"

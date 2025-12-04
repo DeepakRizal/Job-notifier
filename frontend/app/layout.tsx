@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+
+import "./globals.css";
 import { Header } from "./components/layout/Header";
 import { Footer } from "./components/layout/Footer";
-import "./globals.css";
 import UserProvider from "./providers/userProvider";
 import QueryProvider from "./providers/QueryProvider";
 

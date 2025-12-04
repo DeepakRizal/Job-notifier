@@ -3,15 +3,15 @@
 import { useEffect } from "react";
 import { useUserStore } from "@/lib/stores/user-store";
 
-export default function UserProvider({
-  children,
-}: {
+interface UserProviderProps {
   children: React.ReactNode;
-}) {
+}
+
+export default function UserProvider({ children }: UserProviderProps) {
   const loadUser = useUserStore((s) => s.loadUser);
 
   useEffect(() => {
-    loadUser();
+    void loadUser();
   }, [loadUser]);
 
   return <>{children}</>;
