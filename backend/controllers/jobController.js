@@ -134,14 +134,71 @@ export const test = async (req, res, next) => {
   }
 };
 
-//Handler to get all jobs
 export const getAllJobs = async (req, res, next) => {
-  const jobs = await Job.find({});
+  try {
+    const q = (req.query.q || "").trim();
+    const roleParam = (req.query.role || "").trim() || null;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(100, parseInt(req.query.limit, 10) || 20);
 
-  res.status(200).json({
-    success: true,
-    jobs,
-  });
+    const escapeForRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+    const andConditions = [];
+
+    if (q) {
+      const qRegex = new RegExp(escapeForRegex(q), "i");
+      const qCondition = {
+        $or: [
+          { title: qRegex },
+          { company: qRegex },
+          { location: qRegex },
+          { tags: { $in: [qRegex] } },
+          { description: qRegex },
+        ],
+      };
+      andConditions.push(qCondition);
+    }
+
+    console.log(andConditions);
+
+    if (roleParam) {
+      const roleRegex = new RegExp(escapeForRegex(roleParam), "i");
+
+      const roleCondition = {
+        $or: [
+          { role: roleParam },
+          { tags: { $in: [roleRegex] } },
+          { title: roleRegex },
+          { description: roleRegex },
+        ],
+      };
+
+      andConditions.push(roleCondition);
+    }
+
+    const filter = andConditions.length ? { $and: andConditions } : {};
+
+    const total = await Job.countDocuments(filter);
+
+    const sort = { createdAt: -1 };
+
+    const jobs = await Job.find(filter)
+      .sort(sort)
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean()
+      .exec();
+
+    return res.status(200).json({
+      success: true,
+      jobs,
+      page,
+      limit,
+      total,
+    });
+  } catch (err) {
+    next(err);
+  }
 };
 
 export const getMyJobs = async (req, res, next) => {

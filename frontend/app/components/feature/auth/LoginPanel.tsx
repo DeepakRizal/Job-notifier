@@ -1,12 +1,14 @@
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
-import { isApiError } from "@/app/lib/errors";
+import { apiFetch } from "@/lib/api";
+import { isApiError } from "@/lib/errors";
+import { useUserStore } from "@/lib/stores/user-store";
 import { AuthResponse } from "@/types/user";
 
 import { useRouter } from "next/navigation";
 
 import { useForm } from "react-hook-form";
+import { useShallow } from "zustand/shallow";
 
 interface Inputs {
   email: string;
@@ -23,12 +25,20 @@ export function LoginPanel() {
 
   const router = useRouter();
 
+  const { setUser } = useUserStore(
+    useShallow((s) => ({
+      setUser: s.setUser,
+    }))
+  );
+
   const onSubmit = async (data: Inputs) => {
     try {
       const response = (await apiFetch<AuthResponse>("/auth/login", {
         method: "POST",
         data: { email: data.email, password: data.password },
       })) as AuthResponse;
+
+      setUser(response.user);
 
       if (response.success) {
         router.push("/dashboard");

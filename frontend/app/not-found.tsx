@@ -11,7 +11,7 @@ export default function NotFound() {
             <h1 className="text-8xl font-bold tracking-tight text-accent md:text-9xl">
               404
             </h1>
-            <div className="mt-4 h-1 w-24 mx-auto bg-gradient-to-r from-accent to-accent-press rounded-full" />
+            <div className="mt-4 h-1 w-24 mx-auto bg-linear-to-r from-accent to-accent-press rounded-full" />
           </div>
 
           {/* Main Message */}
@@ -21,17 +21,18 @@ export default function NotFound() {
                 <Search size={32} className="text-accent" />
               </div>
             </div>
-            
+
             <h2 className="text-2xl font-bold tracking-tight text-text-title mb-3 md:text-3xl">
               Page Not Found
             </h2>
-            
+
             <p className="text-base text-text-body leading-relaxed mb-2 max-w-md mx-auto">
-              The page you're looking for doesn't exist or has been moved.
+              The page you&apos;re looking for doesn&apos;t exist or has been
+              moved.
             </p>
-            
+
             <p className="text-sm text-text-muted">
-              Don't worry, let's get you back on track.
+              Don&apos;t worry, let&apos;s get you back on track.
             </p>
           </div>
 
@@ -41,8 +42,11 @@ export default function NotFound() {
               <Home size={18} />
               Go Home
             </Link>
-            
-            <Link href="/dashboard" className="ui-btn-secondary w-full sm:w-auto">
+
+            <Link
+              href="/dashboard"
+              className="ui-btn-secondary w-full sm:w-auto"
+            >
               <ArrowLeft size={18} />
               Back to Dashboard
             </Link>
@@ -79,4 +83,3 @@ export default function NotFound() {
     </div>
   );
 }
-

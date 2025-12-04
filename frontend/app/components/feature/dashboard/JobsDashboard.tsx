@@ -1,10 +1,14 @@
 "use client";
-
+import { useQuery } from "@tanstack/react-query";
 import { JobCard } from "../jobs/JobCard";
 import { Search, Filter, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
+import { fetchJobs } from "@/lib/queries/jobs";
+import { JobDocument } from "@/types/job";
+import ArcLoader from "../../layout/ArcLoader";
 
-// Role categories
+type JobStatus = "applied" | "interview" | "offer" | "rejected" | "saved";
+
 type JobRole =
   | "Frontend Developer"
   | "Backend Developer"
@@ -12,142 +16,6 @@ type JobRole =
   | "Mobile Developer"
   | "DevOps Engineer";
 
-// Dummy job data
-const dummyJobs = [
-  {
-    id: "1",
-    title: "Senior React Developer",
-    company: "TechCorp Inc.",
-    location: "Remote · Global",
-    status: "saved" as const,
-    postedAgo: "2 hours ago",
-    matchScore: 94,
-    salaryRange: "$120k - $160k",
-    role: "Frontend Developer" as JobRole,
-    skills: ["React", "TypeScript", "Node.js"],
-    description:
-      "Looking for an experienced React developer to join our growing team.",
-  },
-  {
-    id: "2",
-    title: "Full Stack Engineer",
-    company: "StartupXYZ",
-    location: "Hybrid · San Francisco",
-    status: "saved" as const,
-    postedAgo: "5 hours ago",
-    matchScore: 89,
-    salaryRange: "$130k - $170k",
-    role: "Full Stack Developer" as JobRole,
-    skills: ["React", "Next.js", "PostgreSQL"],
-    description: "Build scalable web applications with modern technologies.",
-  },
-  {
-    id: "3",
-    title: "Frontend Developer",
-    company: "DesignStudio",
-    location: "Remote · US",
-    status: "saved" as const,
-    postedAgo: "1 day ago",
-    matchScore: 87,
-    salaryRange: "$100k - $140k",
-    role: "Frontend Developer" as JobRole,
-    skills: ["React", "Tailwind CSS", "Figma"],
-    description: "Create beautiful and functional user interfaces.",
-  },
-  {
-    id: "4",
-    title: "React Native Developer",
-    company: "MobileFirst",
-    location: "Remote · Europe",
-    status: "saved" as const,
-    postedAgo: "1 day ago",
-    matchScore: 82,
-    salaryRange: "$110k - $150k",
-    role: "Mobile Developer" as JobRole,
-    skills: ["React Native", "TypeScript", "Redux"],
-    description: "Develop cross-platform mobile applications.",
-  },
-  {
-    id: "5",
-    title: "Software Engineer - Frontend",
-    company: "BigTech Co.",
-    location: "Hybrid · New York",
-    status: "saved" as const,
-    postedAgo: "2 days ago",
-    matchScore: 91,
-    salaryRange: "$140k - $180k",
-    role: "Frontend Developer" as JobRole,
-    skills: ["React", "TypeScript", "GraphQL"],
-    description: "Work on cutting-edge frontend technologies.",
-  },
-  {
-    id: "6",
-    title: "Senior Frontend Engineer",
-    company: "CloudScale",
-    location: "Remote · Worldwide",
-    status: "saved" as const,
-    postedAgo: "3 days ago",
-    matchScore: 88,
-    salaryRange: "$125k - $165k",
-    role: "Frontend Developer" as JobRole,
-    skills: ["React", "Next.js", "AWS"],
-    description: "Lead frontend development for cloud-based platforms.",
-  },
-  {
-    id: "7",
-    title: "Backend Engineer",
-    company: "API Solutions",
-    location: "Remote · Global",
-    status: "saved" as const,
-    postedAgo: "4 hours ago",
-    matchScore: 85,
-    salaryRange: "$115k - $155k",
-    role: "Backend Developer" as JobRole,
-    skills: ["Node.js", "Python", "PostgreSQL"],
-    description: "Build robust backend systems and APIs.",
-  },
-  {
-    id: "8",
-    title: "Senior Backend Developer",
-    company: "DataFlow Inc.",
-    location: "Hybrid · Seattle",
-    status: "saved" as const,
-    postedAgo: "6 hours ago",
-    matchScore: 90,
-    salaryRange: "$135k - $175k",
-    role: "Backend Developer" as JobRole,
-    skills: ["Java", "Spring Boot", "MongoDB"],
-    description: "Design and implement scalable backend services.",
-  },
-  {
-    id: "9",
-    title: "Full Stack Developer",
-    company: "WebCraft",
-    location: "Remote · US",
-    status: "saved" as const,
-    postedAgo: "1 day ago",
-    matchScore: 86,
-    salaryRange: "$125k - $165k",
-    role: "Full Stack Developer" as JobRole,
-    skills: ["React", "Node.js", "PostgreSQL"],
-    description: "End-to-end development of web applications.",
-  },
-  {
-    id: "10",
-    title: "DevOps Engineer",
-    company: "CloudOps",
-    location: "Remote · Global",
-    status: "saved" as const,
-    postedAgo: "2 days ago",
-    matchScore: 83,
-    salaryRange: "$120k - $160k",
-    role: "DevOps Engineer" as JobRole,
-    skills: ["Docker", "Kubernetes", "AWS"],
-    description: "Manage infrastructure and deployment pipelines.",
-  },
-];
-
-// Available role filters
 const roleFilters: JobRole[] = [
   "Frontend Developer",
   "Backend Developer",
@@ -156,28 +24,88 @@ const roleFilters: JobRole[] = [
   "DevOps Engineer",
 ];
 
+function timeSince(dateStr?: string | null) {
+  if (!dateStr) return "Recently";
+  const date = new Date(dateStr);
+  const now = new Date();
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (isNaN(seconds) || seconds < 0) return "Recently";
+  if (seconds < 10) return "Just now";
+  if (seconds < 60) return `${seconds}s ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  const weeks = Math.floor(days / 7);
+  if (weeks < 5) return `${weeks}w ago`;
+  return date.toLocaleDateString();
+}
+
 export function JobsDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilter, setSelectedFilter] = useState<JobRole | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  const filteredJobs = dummyJobs.filter((job) => {
-    const matchesSearch =
-      job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.location.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFilter = !selectedFilter || job.role === selectedFilter;
-    return matchesSearch && matchesFilter;
+  const {
+    data: jobs,
+    isLoading,
+    error,
+  } = useQuery<JobDocument[], Error>({
+    queryKey: ["jobs", { q: searchQuery.trim(), role: selectedFilter }],
+    queryFn: () =>
+      fetchJobs({
+        q: searchQuery.trim() || undefined,
+        role: selectedFilter || undefined,
+      }),
+    staleTime: 30_000,
   });
+
+  console.log(jobs);
+
+  const filteredJobs = (jobs ?? []).map((job: JobDocument) => {
+    const minExp = job.experience?.min ?? job.minExperience ?? null;
+    const maxExp = job.experience?.max ?? job.maxExperience ?? null;
+    const expText =
+      minExp != null && maxExp != null
+        ? `${minExp}-${maxExp} yrs exp`
+        : minExp != null
+        ? `${minExp}+ yrs exp`
+        : "Experience N/A";
+
+    return {
+      id: job._id,
+      title: job.title,
+      company: job.company,
+      location: job.location,
+      status: "saved" as JobStatus,
+      postedAgo: timeSince(job.createdAt ?? job.discoveredAt),
+      matchScore: 0,
+      skills: job.tags ?? [],
+      salaryRange: expText,
+      description: job.description ?? "",
+      rawHTML: job.rawHTML ?? "",
+      source: job.source ?? "",
+      url: job.url ?? "",
+    };
+  });
+
+  if (isLoading) {
+    return <ArcLoader />;
+  }
+
+  if (error) {
+    return <div>Error loading jobs: {error.message}</div>;
+  }
 
   return (
     <div className="space-y-4">
       {/* Filters and Search */}
       <div className="ui-card p-3">
         <div className="space-y-3">
-          {/* Search Bar and Filter Toggle - Same Line */}
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-            {/* Search Bar */}
             <div className="relative flex-1">
               <Search
                 size={18}
@@ -192,7 +120,6 @@ export function JobsDashboard() {
               />
             </div>
 
-            {/* Filter Toggle Button */}
             <button
               onClick={() => setIsFilterOpen(!isFilterOpen)}
               className="flex items-center justify-between gap-3 rounded-lg border border-surface-border bg-surface px-4 py-2.5 transition-colors hover:bg-surface-subtle sm:shrink-0"
@@ -214,7 +141,6 @@ export function JobsDashboard() {
             </button>
           </div>
 
-          {/* Role Filters - Collapsible Content */}
           <div
             className={`overflow-hidden transition-all duration-300 ease-in-out ${
               isFilterOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
@@ -272,8 +198,12 @@ export function JobsDashboard() {
               location={job.location}
               status={job.status}
               postedAgo={job.postedAgo}
-              salaryRange={`Match: ${job.matchScore}%`}
+              salaryRange={job.salaryRange}
               skills={job.skills}
+              url={job.url}
+              // If you want JobCard to render description/source you can add props here
+              // description={job.description}
+              // source={job.source}
             />
           ))}
         </div>

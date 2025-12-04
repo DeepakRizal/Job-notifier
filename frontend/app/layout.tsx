@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+
+import "./globals.css";
 import { Header } from "./components/layout/Header";
 import { Footer } from "./components/layout/Footer";
-import "./globals.css";
-import AuthGuard from "./components/feature/auth/AuthGuard";
+import UserProvider from "./providers/userProvider";
+import QueryProvider from "./providers/QueryProvider";
 
 // Primary SaaS font: Inter
 const inter = Inter({
@@ -20,15 +22,20 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
       <body className={`${inter.variable} antialiased`}>
         <div className="ui-page-shell flex min-h-screen flex-col">
           <Header />
-          <main className="flex-1">{children}</main>
+          {/* <-- change here: make main a centering flex container */}
+          <main className="flex-1 flex items-center justify-center">
+            <UserProvider>
+              <QueryProvider>{children}</QueryProvider>
+            </UserProvider>
+          </main>
           <Footer />
         </div>
       </body>
