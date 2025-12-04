@@ -8,6 +8,7 @@ interface JobCardProps {
   postedAgo: string;
   salaryRange?: string;
   skills?: string[];
+  url?: string;
 }
 
 const statusLabel: Record<JobStatus, string> = {
@@ -26,6 +27,7 @@ export function JobCard({
   postedAgo,
   salaryRange,
   skills = [],
+  url,
 }: JobCardProps) {
   const isPositive = status === "interview" || status === "offer";
   const isNegative = status === "rejected";
@@ -92,12 +94,20 @@ export function JobCard({
           </div>
 
           <div className="flex items-center gap-2">
-            <button className="ui-btn-ghost text-xs md:text-sm">
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ui-btn-ghost text-xs md:text-sm"
+            >
               View Details
-            </button>
-            <button className="ui-btn-primary text-xs md:text-sm">
+            </a>
+            <a
+              href={url}
+              className="ui-btn-primary text-xs md:text-sm"
+            >
               Apply Now
-            </button>
+            </a>
           </div>
         </div>
       </div>

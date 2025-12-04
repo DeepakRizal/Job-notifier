@@ -134,37 +134,51 @@ export const test = async (req, res, next) => {
   }
 };
 
-//Handler to get all jobs
 export const getAllJobs = async (req, res, next) => {
   try {
     const q = (req.query.q || "").trim();
-    const role = req.query.role || null;
-    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const roleParam = (req.query.role || "").trim() || null;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const limit = Math.min(100, parseInt(req.query.limit, 10) || 20);
 
-    console.log(req.query);
+    const escapeForRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-    const filter = {};
-
-    if (role) {
-      filter.role = role;
-    }
+    const andConditions = [];
 
     if (q) {
-      const regex = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
-
-      filter.$or = [
-        { title: regex },
-        { company: regex },
-        { location: regex },
-        { skills: { $in: [regex] } },
-      ];
+      const qRegex = new RegExp(escapeForRegex(q), "i");
+      const qCondition = {
+        $or: [
+          { title: qRegex },
+          { company: qRegex },
+          { location: qRegex },
+          { tags: { $in: [qRegex] } },
+          { description: qRegex },
+        ],
+      };
+      andConditions.push(qCondition);
     }
 
-    console.log(filter);
+    console.log(andConditions);
+
+    if (roleParam) {
+      const roleRegex = new RegExp(escapeForRegex(roleParam), "i");
+
+      const roleCondition = {
+        $or: [
+          { role: roleParam },
+          { tags: { $in: [roleRegex] } },
+          { title: roleRegex },
+          { description: roleRegex },
+        ],
+      };
+
+      andConditions.push(roleCondition);
+    }
+
+    const filter = andConditions.length ? { $and: andConditions } : {};
 
     const total = await Job.countDocuments(filter);
-    console.log(total);
 
     const sort = { createdAt: -1 };
 
@@ -182,8 +196,8 @@ export const getAllJobs = async (req, res, next) => {
       limit,
       total,
     });
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 };
 
