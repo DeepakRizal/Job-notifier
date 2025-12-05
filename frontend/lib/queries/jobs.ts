@@ -27,3 +27,11 @@ export async function fetchJobs({
 
   return res.jobs;
 }
+
+export async function fetchMyJobs() {
+  const res = (await apiFetch("/jobs/mine", {
+    method: "GET",
+  })) as JobsResponse;
+
+  return res.jobs;
+}

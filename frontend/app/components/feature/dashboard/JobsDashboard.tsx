@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { JobCard } from "../jobs/JobCard";
 import { Search, Filter, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
-import { fetchJobs } from "@/lib/queries/jobs";
+import { fetchMyJobs } from "@/lib/queries/jobs";
 import { JobDocument } from "@/types/job";
 import ArcLoader from "../../layout/ArcLoader";
 
@@ -53,11 +53,7 @@ export function JobsDashboard() {
     error,
   } = useQuery<JobDocument[], Error>({
     queryKey: ["jobs", { q: searchQuery.trim(), role: selectedFilter }],
-    queryFn: () =>
-      fetchJobs({
-        q: searchQuery.trim() || undefined,
-        role: selectedFilter || undefined,
-      }),
+    queryFn: () => fetchMyJobs(),
     staleTime: 30_000,
   });
 

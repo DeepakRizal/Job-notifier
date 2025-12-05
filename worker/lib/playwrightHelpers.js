@@ -61,7 +61,7 @@ export async function setNaukriExperienceSliderToZero(page, opts = {}) {
   const applySelector =
     process.env.NAUKRI_APPLY_FILTER_SELECTOR || opts.applySelector || null;
   const screenshotPath = opts.screenshotPath ?? "slider-final.png";
-  const initTimeout = opts.initTimeout ?? 8000; // Wait up to 8s for slider to appear
+  const initTimeout = opts.initTimeout ?? 8000;
 
   // ─────────────────────────────────────────────────────────────────────────────
   // Step 0: Wait for slider elements to appear in DOM (critical for first query)
