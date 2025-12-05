@@ -2,56 +2,13 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import playwright from "playwright";
-
-async function tryApplySiteSort(page, sort) {
-  if (!sort) return;
-
-  try {
-    // wait a short time for the sort control to render
-    await page.waitForTimeout(300);
-
-    const btn = await page.$("button#filter-sort");
-    if (!btn) return;
-
-    // Open the dropdown
-    await btn.click().catch(() => null);
-    // wait for menu to be visible (ul[data-filter-id="sort"])
-    await page
-      .waitForSelector('ul[data-filter-id="sort"]', { timeout: 1500 })
-      .catch(() => null);
-
-    // For Date option your markup has: <a data-id="filter-sort-f"><span>Date</span></a>
-    if (sort === "date") {
-      const dateOption = await page.$(
-        'ul[data-filter-id="sort"] a[data-id="filter-sort-f"]'
-      );
-      if (dateOption) {
-        await dateOption.click().catch(() => null);
-        // wait for page to update (site may reload results via XHR)
-        await page.waitForTimeout(900);
-        // also wait for networkidle as an extra safety
-        await page.waitForLoadState?.("networkidle").catch(() => null);
-      }
-    } else if (sort === "name") {
-      // If you ever map 'name' to relevance / default
-      const nameOption = await page.$(
-        'ul[data-filter-id="sort"] a[data-id="filter-sort-r"]'
-      );
-      if (nameOption) {
-        await nameOption.click().catch(() => null);
-        await page.waitForTimeout(900);
-        await page.waitForLoadState?.("networkidle").catch(() => null);
-      }
-    }
-  } catch (err) {
-    // best-effort — don't break the scraper if this fails
-    console.warn("tryApplySiteSort failed:", err?.message || err);
-  }
-}
+import {
+  tryApplySiteSort,
+  trySetExperienceSliderV2,
+} from "../lib/playwrightHelpers.js";
 
 function parseExperience(expStr) {
   if (!expStr) return null;
-  // simple regex: captures "8-12", "3-5", "0-1", "2 Yrs" etc.
   const m = expStr.match(/(\d+)(?:\s*-\s*(\d+))?/);
   if (!m) return null;
   const min = parseInt(m[1], 10);
@@ -103,7 +60,7 @@ export default async function NaukriScraper({
 
   // Browser launch options
   const launchOptions = {
-    headless: true,
+    headless: false,
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
@@ -130,6 +87,18 @@ export default async function NaukriScraper({
     if (!response) throw new Error("no response");
 
     await tryApplySiteSort(page, sort);
+
+    if (process.env.SCRAPE_ONLY_FRESHERS === "true") {
+      // Wait for page to fully hydrate before manipulating slider
+      // This is especially important for the first query where React hasn't initialized yet
+      await page.waitForTimeout(800);
+
+      const result = await trySetExperienceSliderV2(page, {
+        maxAttempts: 3,
+        initTimeout: 15000, // Give up to 10s for slider to appear on first load
+      });
+      console.log("slider set result:", result);
+    }
 
     // Wait for job cards to appear
     await page

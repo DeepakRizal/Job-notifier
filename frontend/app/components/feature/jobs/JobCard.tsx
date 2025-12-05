@@ -1,38 +1,24 @@
 import { useState } from "react";
 
-type JobStatus = "applied" | "interview" | "offer" | "rejected" | "saved";
-
 interface JobCardProps {
   title: string;
   company: string;
   location: string;
-  status: JobStatus;
   postedAgo: string;
   salaryRange?: string;
   skills?: string[];
   url?: string;
 }
 
-const statusLabel: Record<JobStatus, string> = {
-  applied: "Applied",
-  interview: "Interviewing",
-  offer: "Offer",
-  rejected: "Rejected",
-  saved: "Saved",
-};
-
 export function JobCard({
   title,
   company,
   location,
-  status,
   postedAgo,
   salaryRange,
   skills = [],
   url,
 }: JobCardProps) {
-  const isPositive = status === "interview" || status === "offer";
-  const isNegative = status === "rejected";
   const [showAllSkills, setShowAllSkills] = useState(false);
 
   const visibleSkills = showAllSkills ? skills : skills.slice(0, 4);
@@ -56,19 +42,6 @@ export function JobCard({
               )}
             </div>
           </div>
-
-          {/* Status Badge */}
-          <span
-            className={[
-              "ui-badge text-[11px] md:text-xs w-fit",
-              isPositive ? "ui-badge-success" : "",
-              isNegative ? "border-danger/40 text-danger bg-red-50/80" : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-          >
-            {statusLabel[status]}
-          </span>
         </div>
 
         {/* Skills Tags */}

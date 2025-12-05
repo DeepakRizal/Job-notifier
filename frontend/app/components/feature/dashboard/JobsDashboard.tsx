@@ -7,8 +7,6 @@ import { fetchJobs } from "@/lib/queries/jobs";
 import { JobDocument } from "@/types/job";
 import ArcLoader from "../../layout/ArcLoader";
 
-type JobStatus = "applied" | "interview" | "offer" | "rejected" | "saved";
-
 type JobRole =
   | "Frontend Developer"
   | "Backend Developer"
@@ -80,7 +78,7 @@ export function JobsDashboard() {
       title: job.title,
       company: job.company,
       location: job.location,
-      status: "saved" as JobStatus,
+
       postedAgo: timeSince(job.createdAt ?? job.discoveredAt),
       matchScore: 0,
       skills: job.tags ?? [],
@@ -196,7 +194,6 @@ export function JobsDashboard() {
               title={job.title}
               company={job.company}
               location={job.location}
-              status={job.status}
               postedAgo={job.postedAgo}
               salaryRange={job.salaryRange}
               skills={job.skills}

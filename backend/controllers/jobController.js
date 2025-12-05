@@ -205,6 +205,8 @@ export const getMyJobs = async (req, res, next) => {
   //read the skills
   const { skills } = req.user;
 
+  console.log(skills);
+
   //query the jobs from the database
   const jobs = await Job.find();
 
