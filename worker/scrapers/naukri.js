@@ -90,14 +90,18 @@ export default async function NaukriScraper({
 
     if (process.env.SCRAPE_ONLY_FRESHERS === "true") {
       // Wait for page to fully hydrate before manipulating slider
-      // This is especially important for the first query where React hasn't initialized yet
-      await page.waitForTimeout(800);
+      await page.waitForTimeout(1500);
 
       const result = await trySetExperienceSliderV2(page, {
-        maxAttempts: 3,
-        initTimeout: 15000, // Give up to 10s for slider to appear on first load
+        maxAttempts: 5,
       });
       console.log("slider set result:", result);
+
+      // If slider was set successfully, wait for results to refresh
+      if (result.success) {
+        await page.waitForTimeout(1000);
+        await page.waitForLoadState?.("networkidle").catch(() => null);
+      }
     }
 
     // Wait for job cards to appear
