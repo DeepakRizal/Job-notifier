@@ -99,27 +99,59 @@ export function JobsDashboard() {
 
   return (
     <div className="space-y-4">
-      {/* Filters and Search */}
-      <div className="ui-card p-3">
+      {/* Search + Filter Card */}
+      <div className="ui-card filter-shadow p-3">
         <div className="space-y-3">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+            {/* Search input (pill) */}
+            <label htmlFor="job-search" className="sr-only">
+              Search jobs
+            </label>
             <div className="relative flex-1">
               <Search
                 size={18}
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted"
+                aria-hidden
               />
               <input
+                id="job-search"
                 type="text"
                 placeholder="Search jobs by title, company, or location..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="ui-input w-full pl-10 pr-4"
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  // reset page if you use paging: setPage(1)
+                }}
+                className="w-full pl-10 pr-10 py-2.5 rounded-full bg-surface border border-transparent outline-none filter-input-shadow  placeholder:text-text-muted transition"
+                aria-label="Search jobs by title, company, or location"
               />
+
+              {/* clear button (appears when there's text) */}
+              {searchQuery && (
+                <button
+                  onClick={() => {
+                    setSearchQuery("");
+                    // reset page if you use paging: setPage(1)
+                  }}
+                  aria-label="Clear search"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-text-muted hover:text-text-title"
+                  type="button"
+                >
+                  ✕
+                </button>
+              )}
             </div>
 
+            {/* Filter toggle (lighter, pill) */}
             <button
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className="flex items-center justify-between gap-3 rounded-lg border border-surface-border bg-surface px-4 py-2.5 transition-colors hover:bg-surface-subtle sm:shrink-0"
+              onClick={() => setIsFilterOpen((s) => !s)}
+              aria-expanded={isFilterOpen}
+              aria-controls="role-filters"
+              className={`flex items-center gap-3 rounded-full px-4 py-2.5 transition-shadow focus:outline-none focus:ring-2 focus:ring-blue-200 ${
+                isFilterOpen
+                  ? "shadow-sm bg-surface-subtle"
+                  : "bg-transparent hover:bg-surface-subtle"
+              }`}
             >
               <div className="flex items-center gap-2">
                 <Filter size={16} className="text-text-muted" />
@@ -127,50 +159,69 @@ export function JobsDashboard() {
                   Filter by role
                 </span>
                 {selectedFilter && (
-                  <span className="ui-badge text-[10px]">{selectedFilter}</span>
+                  <span className="ml-2 inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700">
+                    {selectedFilter}
+                  </span>
                 )}
               </div>
+
               {isFilterOpen ? (
-                <ChevronUp size={18} className="text-text-muted shrink-0" />
+                <ChevronUp size={18} className="text-text-muted" />
               ) : (
-                <ChevronDown size={18} className="text-text-muted shrink-0" />
+                <ChevronDown size={18} className="text-text-muted" />
               )}
             </button>
           </div>
 
+          {/* Expandable Role Filters */}
           <div
-            className={`overflow-hidden transition-all duration-300 ease-in-out ${
-              isFilterOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+            id="role-filters"
+            className={`overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${
+              isFilterOpen ? "max-h-72 opacity-100" : "max-h-0 opacity-0"
             }`}
           >
-            <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-surface-border mt-1">
+            <div className="flex flex-wrap items-center gap-2 pt-3">
               <button
-                onClick={() => setSelectedFilter(null)}
-                className={`ui-chip ${
-                  selectedFilter === null ? "ui-chip-active" : ""
+                onClick={() => {
+                  setSelectedFilter(null);
+                  // reset page if you use paging: setPage(1)
+                }}
+                className={`text-sm px-3 py-1 rounded-full transition ${
+                  selectedFilter === null
+                    ? "bg-blue-50 text-blue-700 font-semibold"
+                    : "text-text-muted hover:text-text-title"
                 }`}
+                aria-pressed={selectedFilter === null}
               >
                 All Roles
               </button>
-              {roleFilters.map((role) => (
-                <button
-                  key={role}
-                  onClick={() =>
-                    setSelectedFilter(selectedFilter === role ? null : role)
-                  }
-                  className={`ui-chip ${
-                    selectedFilter === role ? "ui-chip-active" : ""
-                  }`}
-                >
-                  {role}
-                </button>
-              ))}
+
+              {roleFilters.map((role) => {
+                const active = selectedFilter === role;
+                return (
+                  <button
+                    key={role}
+                    onClick={() => {
+                      setSelectedFilter(active ? null : role);
+                      // reset page if you use paging: setPage(1)
+                    }}
+                    className={`text-sm px-3 py-1 rounded-full transition ${
+                      active
+                        ? "bg-blue-50 text-blue-700 font-semibold"
+                        : "text-text-muted hover:text-text-title"
+                    }`}
+                    aria-pressed={active}
+                  >
+                    {role}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Results Count */}
+      {/* Results count */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-text-muted">
           <span className="font-semibold text-text-title">
@@ -178,15 +229,21 @@ export function JobsDashboard() {
           </span>{" "}
           {filteredJobs.length === 1 ? "newly posted job" : "newly posted jobs"}{" "}
           found
-          <span className="ml-2 text-xs text-text-muted">
+          <span className="ml-3 text-xs text-text-muted">
             · Top jobs are the newest
           </span>
         </p>
+
+        {/* Optional: small helper / CTA on right (showing sorting or refresh) */}
+        <div className="text-xs text-text-muted hidden sm:block">
+          {/* Example: last updated timestamp or a sort control — replace as needed */}
+          Updated just now
+        </div>
       </div>
 
       {/* Job Cards Grid */}
       {filteredJobs.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           {filteredJobs.map((job) => (
             <JobCard
               key={job.id}
