@@ -53,7 +53,11 @@ export function JobsDashboard() {
     error,
   } = useQuery<JobDocument[], Error>({
     queryKey: ["jobs", { q: searchQuery.trim(), role: selectedFilter }],
-    queryFn: () => fetchMyJobs(),
+    queryFn: () =>
+      fetchMyJobs({
+        q: searchQuery.trim() || undefined,
+        role: selectedFilter ?? undefined,
+      }),
     staleTime: 30_000,
   });
 
@@ -74,7 +78,6 @@ export function JobsDashboard() {
       title: job.title,
       company: job.company,
       location: job.location,
-
       postedAgo: timeSince(job.createdAt ?? job.discoveredAt),
       matchScore: 0,
       skills: job.tags ?? [],

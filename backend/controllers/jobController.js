@@ -159,8 +159,6 @@ export const getAllJobs = async (req, res, next) => {
       andConditions.push(qCondition);
     }
 
-    console.log(andConditions);
-
     if (roleParam) {
       const roleRegex = new RegExp(escapeForRegex(roleParam), "i");
 
@@ -205,10 +203,66 @@ export const getMyJobs = async (req, res, next) => {
   //read the skills
   const { skills } = req.user;
 
-  console.log(skills);
+  const q = (req.query.q || "").trim();
+  const role = (req.query.role || "").trim() || null;
+  const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+  const limit = Math.max(100, parseInt(req.query.limit, 10) || 20);
+
+  const escapeForRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+  const andConditions = [];
+
+  if (q) {
+    const qRegex = new RegExp(escapeForRegex(q), "i");
+    const qCondition = {
+      $or: [
+        {
+          title: qRegex,
+        },
+        {
+          tags: { $in: [qRegex] },
+        },
+        {
+          company: qRegex,
+        },
+        {
+          location: qRegex,
+        },
+        {
+          description: qRegex,
+        },
+      ],
+    };
+
+    andConditions.push(qCondition);
+  }
+
+  if (role) {
+    const roleRegex = new RegExp(escapeForRegex(role), "i");
+
+    const roleCondition = {
+      $or: [
+        { role: role },
+        { tags: { $in: [roleRegex] } },
+        { title: roleRegex },
+        { description: roleRegex },
+      ],
+    };
+
+    andConditions.push(roleCondition);
+  }
+
+  const filter = andConditions.length ? { $and: andConditions } : {};
+
+  const sort = { postedAt: -1 };
 
   //query the jobs from the database
-  const jobs = await Job.find();
+  const jobs = await Job.find(filter)
+    .sort(sort)
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .lean()
+    .exec();
 
   // filter the jobs that matches the user skills
   const filteredJobs = jobs.filter((job) => {
