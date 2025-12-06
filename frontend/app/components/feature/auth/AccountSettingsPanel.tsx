@@ -1,4 +1,9 @@
+"use client";
+import { useUserStore } from "@/lib/stores/user-store";
+
 export function AccountSettingsPanel() {
+  const { user } = useUserStore();
+
   return (
     <section className="ui-card ui-card-hover space-y-4 p-5 md:p-6">
       <header>
@@ -17,7 +22,7 @@ export function AccountSettingsPanel() {
             <div className="flex items-center justify-between">
               <span>Email</span>
               <span className="font-mono text-[11px] text-text-body">
-                deepak@company.com
+                {user?.email}
               </span>
             </div>
             <div className="flex items-center justify-between pt-1">
@@ -36,10 +41,6 @@ export function AccountSettingsPanel() {
               <span>Email</span>
               <span className="text-[11px] text-success">✓ Enabled</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span>Telegram</span>
-              <span className="text-[11px] text-success">✓ Enabled</span>
-            </div>
           </div>
         </div>
       </div>
@@ -56,5 +57,3 @@ export function AccountSettingsPanel() {
     </section>
   );
 }
-
-

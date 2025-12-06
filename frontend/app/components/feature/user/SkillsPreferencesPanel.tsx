@@ -1,4 +1,9 @@
+"use client";
+import { useUserStore } from "@/lib/stores/user-store";
+
 export function SkillsPreferencesPanel() {
+  const { user } = useUserStore();
+
   return (
     <section className="ui-card ui-card-hover space-y-4 p-5 md:p-6">
       <header className="flex items-center justify-between">
@@ -11,17 +16,16 @@ export function SkillsPreferencesPanel() {
       <div className="space-y-3">
         <p className="text-xs font-medium text-text-muted">Skills</p>
         <div className="flex flex-wrap items-center gap-2">
-          <button className="ui-chip ui-chip-active">react</button>
-          <button className="ui-chip">node</button>
-          <button className="ui-chip">nextjs</button>
-          <button className="ui-chip text-accent">+ Add</button>
+          {user?.skills.map((skill: string, index) => (
+            <button key={index} className="ui-chip ">
+              {skill}
+            </button>
+          ))}
         </div>
       </div>
 
       <div className="space-y-3">
-        <p className="text-xs font-medium text-text-muted">
-          Your preferences
-        </p>
+        <p className="text-xs font-medium text-text-muted">Your preferences</p>
         <div className="space-y-2 text-xs text-text-body">
           <div className="flex items-center justify-between">
             <span>Email notifications</span>
@@ -32,24 +36,8 @@ export function SkillsPreferencesPanel() {
               <span>ON</span>
             </div>
           </div>
-          <div className="flex items-center justify-between">
-            <span>Frequency</span>
-            <div className="inline-flex items-center gap-1 rounded-full bg-surface-subtle px-2 py-1">
-              <button className="ui-chip ui-chip-active px-2 py-0 text-[11px]">
-                immediate
-              </button>
-              <button className="ui-chip px-2 py-0 text-[11px]">
-                hourly
-              </button>
-              <button className="ui-chip px-2 py-0 text-[11px]">
-                daily
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </section>
   );
 }
-
-
