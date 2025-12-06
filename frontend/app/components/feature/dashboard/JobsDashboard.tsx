@@ -6,6 +6,7 @@ import { useState } from "react";
 import { fetchMyJobs } from "@/lib/queries/jobs";
 import { JobDocument } from "@/types/job";
 import ArcLoader from "../../layout/ArcLoader";
+import { useDebounce } from "@/app/hooks/useDebounce";
 
 type JobRole =
   | "Frontend Developer"
@@ -44,6 +45,7 @@ function timeSince(dateStr?: string | null) {
 
 export function JobsDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedQuery = useDebounce(searchQuery, 500);
   const [selectedFilter, setSelectedFilter] = useState<JobRole | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
@@ -52,16 +54,14 @@ export function JobsDashboard() {
     isLoading,
     error,
   } = useQuery<JobDocument[], Error>({
-    queryKey: ["jobs", { q: searchQuery.trim(), role: selectedFilter }],
+    queryKey: ["jobs", { q: debouncedQuery.trim(), role: selectedFilter }],
     queryFn: () =>
       fetchMyJobs({
-        q: searchQuery.trim() || undefined,
+        q: debouncedQuery.trim() || undefined,
         role: selectedFilter ?? undefined,
       }),
-    staleTime: 30_000,
+    staleTime: 30000,
   });
-
-  console.log(jobs);
 
   const filteredJobs = (jobs ?? []).map((job: JobDocument) => {
     const minExp = job.experience?.min ?? job.minExperience ?? null;

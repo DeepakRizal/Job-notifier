@@ -19,8 +19,6 @@ export function useUser() {
         method: "GET",
       })) as AuthResponse;
 
-      console.log(data.user);
-
       setUser(data?.user);
     } catch (e: unknown) {
       setUser(null);
