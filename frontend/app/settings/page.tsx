@@ -3,9 +3,14 @@ import { AccountSettingsPanel } from "../components/feature/auth/AccountSettings
 
 export default function SettingsPage() {
   return (
-    <div className="ui-page-content space-y-4">
-      <SkillsPreferencesPanel />
-      <AccountSettingsPanel />
+    <div className="min-h-screen">
+      <div className="mx-auto max-w-4xl px-6 py-12 lg:px-8">
+        {/* Settings Sections */}
+        <div className="space-y-8">
+          <SkillsPreferencesPanel />
+          <AccountSettingsPanel />
+        </div>
+      </div>
     </div>
   );
 }

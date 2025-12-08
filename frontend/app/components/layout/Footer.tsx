@@ -7,7 +7,7 @@ import { useShallow } from "zustand/shallow";
 export function Footer() {
   const year = new Date().getFullYear();
 
-  const { user, loading, setUser } = useUserStore(
+  const { user } = useUserStore(
     useShallow((s) => ({
       user: s.user,
       loading: s.loading,
@@ -40,12 +40,18 @@ export function Footer() {
               {user ? (
                 <>
                   <li>
-                    <Link href="/dashboard" className="hover:text-text-title">
+                    <Link
+                      href="/dashboard"
+                      className="hover:text-emerald-600 transition-colors"
+                    >
                       Dashboard
                     </Link>
                   </li>
                   <li>
-                    <Link href="/settings" className="hover:text-text-title">
+                    <Link
+                      href="/settings"
+                      className="hover:text-emerald-600 transition-colors"
+                    >
                       Settings
                     </Link>
                   </li>
@@ -53,12 +59,18 @@ export function Footer() {
               ) : (
                 <>
                   <li>
-                    <Link href="/login" className="hover:text-text-title">
+                    <Link
+                      href="/login"
+                      className="hover:text-emerald-600 transition-colors"
+                    >
                       Login
                     </Link>
                   </li>
                   <li>
-                    <Link href="/register" className="hover:text-text-title">
+                    <Link
+                      href="/register"
+                      className="hover:text-emerald-600 transition-colors"
+                    >
                       Create Account
                     </Link>
                   </li>
@@ -74,17 +86,26 @@ export function Footer() {
             </h4>
             <ul className="space-y-2 text-sm text-text-muted">
               <li>
-                <Link href="/about" className="hover:text-text-title">
+                <Link
+                  href="/about"
+                  className="hover:text-emerald-600 transition-colors"
+                >
                   About
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="hover:text-text-title">
+                <Link
+                  href="/contact"
+                  className="hover:text-emerald-600 transition-colors"
+                >
                   Contact
                 </Link>
               </li>
               <li>
-                <Link href="/feedback" className="hover:text-text-title">
+                <Link
+                  href="/feedback"
+                  className="hover:text-emerald-600 transition-colors"
+                >
                   Feedback
                 </Link>
               </li>
@@ -98,12 +119,18 @@ export function Footer() {
             </h4>
             <ul className="space-y-2 text-sm text-text-muted">
               <li>
-                <Link href="/privacy" className="hover:text-text-title">
+                <Link
+                  href="/privacy"
+                  className="hover:text-emerald-600 transition-colors"
+                >
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link href="/terms" className="hover:text-text-title">
+                <Link
+                  href="/terms"
+                  className="hover:text-emerald-600 transition-colors"
+                >
                   Terms of Service
                 </Link>
               </li>
@@ -119,14 +146,14 @@ export function Footer() {
             <a
               href="https://github.com/DeepakRizal"
               target="_blank"
-              className="hover:text-text-title transition-colors"
+              className="hover:text-emerald-600 transition-colors"
             >
               GitHub
             </a>
             <a
               href="https://x.com/DeepakRiza1"
               target="_blank"
-              className="hover:text-text-title transition-colors"
+              className="hover:text-emerald-600 transition-colors"
             >
               Twitter
             </a>
