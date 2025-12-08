@@ -2,7 +2,7 @@
 
 /*
   Refined Design System for Job-Notifier
-  - Professional blue-based palette
+  - Emerald & Warm Sand palette - Growth, opportunity, warmth
   - Consistent spacing, typography, and shadow scales
   - Dark mode support
   - Accessibility-first with reduced motion support
@@ -13,16 +13,26 @@
      COLOR TOKENS - Light Mode
      ============================================ */
 
-  /* Brand Accent - Refined Blue Palette */
-  --accent-50: #eff6ff;
-  --accent-100: #dbeafe;
-  --accent-200: #bfdbfe;
-  --accent-300: #93c5fd;
-  --accent-400: #60a5fa;
-  --accent-500: #3b82f6; /* Primary brand */
-  --accent-600: #2563eb; /* Press/Active */
-  --accent-700: #1d4ed8;
-  --accent-900: #1e3a8a;
+  /* Brand Accent - Emerald Palette (Growth & Opportunity) */
+  --accent-50: #ecfdf5;
+  --accent-100: #d1fae5;
+  --accent-200: #a7f3d0;
+  --accent-300: #6ee7b7;
+  --accent-400: #34d399;
+  --accent-500: #10b981; /* Primary brand */
+  --accent-600: #059669; /* Press/Active */
+  --accent-700: #047857;
+  --accent-900: #064e3b;
+
+  /* Secondary Accent - Warm Amber (Energy & Action) */
+  --secondary-50: #fffbeb;
+  --secondary-100: #fef3c7;
+  --secondary-200: #fde68a;
+  --secondary-300: #fcd34d;
+  --secondary-400: #fbbf24;
+  --secondary-500: #f59e0b;
+  --secondary-600: #d97706;
+  --secondary-700: #b45309;
 
   /* Primary Accent (mapped for compatibility) */
   --accent: var(--accent-500);
@@ -31,23 +41,23 @@
   --accent-light: var(--accent-100);
   --accent-subtle: var(--accent-50);
 
-  /* Surface & Background */
-  --bg-root: #ffffff;
-  --bg-subtle: #f8fafc;
+  /* Surface & Background - Warm Cream Tones */
+  --bg-root: #fefdfb;
+  --bg-subtle: #faf9f7;
   --bg-elevated: #ffffff;
-  --bg-overlay: rgba(255, 255, 255, 0.8);
+  --bg-overlay: rgba(254, 253, 251, 0.9);
 
-  /* Borders */
-  --border-subtle: #e2e8f0;
-  --border-default: #cbd5e1;
-  --border-focus: #93c5fd;
-  --border-strong: #94a3b8;
+  /* Borders - Warm Stone */
+  --border-subtle: #e7e5e4;
+  --border-default: #d6d3d1;
+  --border-focus: #6ee7b7;
+  --border-strong: #a8a29e;
 
-  /* Text Hierarchy */
-  --text-title: #0f172a; /* Headings */
-  --text-body: #475569; /* Body text */
-  --text-muted: #64748b; /* Secondary text */
-  --text-subtle: #94a3b8; /* Tertiary text */
+  /* Text Hierarchy - Warm Charcoal */
+  --text-title: #1c1917; /* Headings */
+  --text-body: #44403c; /* Body text */
+  --text-muted: #78716c; /* Secondary text */
+  --text-subtle: #a8a29e; /* Tertiary text */
   --text-inverse: #ffffff; /* Text on dark */
 
   /* Semantic Colors */
@@ -88,25 +98,28 @@
   --radius-full: 9999px; /* Pill */
 
   /* ============================================
-     SHADOW DEPTH SCALE
+     SHADOW DEPTH SCALE - Natural, soft shadows
      ============================================ */
-  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-sm: -1px -3px 5px 1px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -2px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-    0 4px 6px -4px rgba(0, 0, 0, 0.1);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 8px 10px -6px rgba(0, 0, 0, 0.1);
-  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.06),
+    0 1px 2px -1px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07),
+    0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08),
+    0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08),
+    0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
 
   /* Component-specific shadows */
-  --card-shadow: var(--shadow-sm);
-  --card-shadow-hover: var(--shadow-md);
+  --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04),
+    0 1px 2px -1px rgba(0, 0, 0, 0.02);
+  --card-shadow-hover: 0 8px 25px -5px rgba(0, 0, 0, 0.08),
+    0 4px 10px -5px rgba(0, 0, 0, 0.04);
   --btn-shadow: var(--shadow-xs);
-  --btn-shadow-hover: 0 4px 6px -1px rgba(59, 130, 246, 0.25),
-    0 2px 4px -2px rgba(59, 130, 246, 0.15);
-  --focus-ring: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 0 0 1px var(--accent-500);
+  --btn-shadow-hover: 0 4px 6px -1px rgba(16, 185, 129, 0.25),
+    0 2px 4px -2px rgba(16, 185, 129, 0.15);
+  --focus-ring: 0 0 0 3px rgba(16, 185, 129, 0.15), 0 0 0 1px var(--accent-500);
 
   /* ============================================
      TYPOGRAPHY SCALE
@@ -141,31 +154,31 @@
    DARK MODE TOKENS
    ============================================ */
 .dark {
-  /* Brand Accent (same in dark mode) */
+  /* Brand Accent - Emerald in dark mode */
   --accent: var(--accent-500);
   --accent-hover: var(--accent-400);
   --accent-press: var(--accent-600);
-  --accent-light: rgba(59, 130, 246, 0.15);
-  --accent-subtle: rgba(59, 130, 246, 0.08);
+  --accent-light: rgba(16, 185, 129, 0.15);
+  --accent-subtle: rgba(16, 185, 129, 0.08);
 
-  /* Surface & Background */
-  --bg-root: #0f172a;
-  --bg-subtle: #1e293b;
-  --bg-elevated: #1e293b;
-  --bg-overlay: rgba(30, 41, 59, 0.8);
+  /* Surface & Background - Warm dark tones */
+  --bg-root: #1c1917;
+  --bg-subtle: #292524;
+  --bg-elevated: #292524;
+  --bg-overlay: rgba(41, 37, 36, 0.9);
 
   /* Borders */
-  --border-subtle: #334155;
-  --border-default: #475569;
-  --border-focus: #60a5fa;
-  --border-strong: #64748b;
+  --border-subtle: #44403c;
+  --border-default: #57534e;
+  --border-focus: #34d399;
+  --border-strong: #78716c;
 
   /* Text Hierarchy */
-  --text-title: #f1f5f9;
-  --text-body: #cbd5e1;
-  --text-muted: #94a3b8;
-  --text-subtle: #64748b;
-  --text-inverse: #0f172a;
+  --text-title: #fafaf9;
+  --text-body: #d6d3d1;
+  --text-muted: #a8a29e;
+  --text-subtle: #78716c;
+  --text-inverse: #1c1917;
 
   /* Semantic Colors (adjusted for dark) */
   --success-light: rgba(16, 185, 129, 0.15);
@@ -175,15 +188,17 @@
   --danger-light: rgba(239, 68, 68, 0.15);
   --danger-bg: rgba(239, 68, 68, 0.1);
 
-  /* Shadows (lighter in dark mode) */
-  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4),
-    0 2px 4px -2px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4),
-    0 4px 6px -4px rgba(0, 0, 0, 0.3);
-  --card-shadow: var(--shadow-sm);
-  --card-shadow-hover: var(--shadow-md);
+  /* Shadows (subtle glow effect in dark mode) */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.25);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px -1px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.35),
+    0 2px 4px -2px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.35),
+    0 4px 6px -4px rgba(0, 0, 0, 0.25);
+  --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.03);
+  --card-shadow-hover: 0 8px 25px -5px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 @theme inline {
@@ -262,6 +277,18 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  /* Subtle warm pattern background */
+  background-image: radial-gradient(
+      circle at 25% 0%,
+      rgba(16, 185, 129, 0.03) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 75% 100%,
+      rgba(245, 158, 11, 0.02) 0%,
+      transparent 50%
+    );
+  background-attachment: fixed;
 }
 
 /* Reduced Motion Support */
@@ -293,11 +320,35 @@ body {
 
   .ui-card-hover {
     @apply hover:-translate-y-0.5;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ui-card-hover::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent-400), var(--accent-600));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 300ms ease;
   }
 
   .ui-card-hover:hover {
     box-shadow: var(--card-shadow-hover);
     border-color: var(--border-default);
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 1) 0%,
+      rgba(236, 253, 245, 0.3) 100%
+    );
+  }
+
+  .ui-card-hover:hover::after {
+    transform: scaleX(1);
   }
 
   .ui-card-hover:focus-within {
@@ -306,11 +357,11 @@ body {
   }
 
   .ui-card-neon {
-    box-shadow: var(--card-shadow), 0 0 0 1px rgba(59, 130, 246, 0.15);
+    box-shadow: var(--card-shadow), 0 0 0 1px rgba(16, 185, 129, 0.15);
   }
 
   .ui-card-neon:hover {
-    box-shadow: var(--card-shadow-hover), 0 0 0 1px rgba(59, 130, 246, 0.25);
+    box-shadow: var(--card-shadow-hover), 0 0 0 1px rgba(16, 185, 129, 0.25);
   }
 
   /* Glass morphism effect for preview panel */
@@ -370,9 +421,9 @@ body {
   .ui-btn-secondary {
     @apply inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-medium;
     border-radius: var(--radius-full);
-    border: 1px solid rgba(59, 130, 246, 0.3);
-    color: var(--accent-500);
-    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.1), var(--shadow-xs);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: var(--accent-600);
+    box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.1), var(--shadow-xs);
     background: var(--bg-elevated);
     transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
     letter-spacing: var(--letter-spacing-tight);
@@ -380,14 +431,14 @@ body {
 
   .ui-btn-secondary:hover:not(:disabled) {
     background: var(--accent-subtle);
-    border-color: rgba(59, 130, 246, 0.4);
-    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.2), var(--shadow-sm);
+    border-color: rgba(16, 185, 129, 0.4);
+    box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.2), var(--shadow-sm);
     transform: translateY(-1px);
   }
 
   .ui-btn-secondary:active:not(:disabled) {
     transform: scale(0.98) translateY(0);
-    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.15), var(--shadow-xs);
+    box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.15), var(--shadow-xs);
   }
 
   .ui-btn-secondary:focus-visible {
@@ -452,7 +503,7 @@ body {
 
   .ui-input:focus {
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 0 0 1px var(--accent),
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1), 0 0 0 1px var(--accent),
       var(--shadow-sm);
     outline: none;
   }
@@ -476,8 +527,8 @@ body {
       var(--accent-subtle) 0%,
       var(--accent-light) 100%
     );
-    border-color: rgba(59, 130, 246, 0.25);
-    color: var(--accent-600);
+    border-color: rgba(16, 185, 129, 0.25);
+    color: var(--accent-700);
     font-weight: var(--font-weight-medium);
   }
 
@@ -570,7 +621,7 @@ body {
       var(--accent) 0%,
       var(--accent-press) 100%
     );
-    box-shadow: var(--shadow-sm), 0 0 0 1px rgba(59, 130, 246, 0.2);
+    box-shadow: var(--shadow-sm), 0 0 0 1px rgba(16, 185, 129, 0.2);
     font-weight: 600;
   }
 
@@ -580,7 +631,7 @@ body {
       var(--accent-hover) 0%,
       var(--accent) 100%
     );
-    box-shadow: var(--shadow-md), 0 0 0 1px rgba(59, 130, 246, 0.3);
+    box-shadow: var(--shadow-md), 0 0 0 1px rgba(16, 185, 129, 0.3);
   }
 
   /* Tiny toggle pill (for ON/OFF style switches) */
@@ -606,11 +657,276 @@ body {
     animation: ui-skeleton-shimmer 1.2s ease-in-out infinite;
   }
 
+  /* Search input - subtle inset effect */
   .filter-input-shadow {
-    @apply shadow-[1px_1px_5px_0px_rgba(0,_0,_0,_0.1)];
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04),
+      0 0 0 1px rgba(0, 0, 0, 0.03);
   }
+
+  .filter-input-shadow:hover {
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04),
+      0 0 0 1px var(--border-focus);
+  }
+
+  .filter-input-shadow:focus {
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+
+  /* Filter card container */
   .filter-shadow {
-    @apply shadow-[1px_1px_5px_0px_rgba(0,_0,_0,_0.1)];
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04),
+      0 1px 2px -1px rgba(0, 0, 0, 0.02);
+  }
+
+  /* Job Card - refined shadow and hover */
+  .job-card {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03),
+      0 1px 2px -1px rgba(0, 0, 0, 0.02), 0 0 0 1px rgba(0, 0, 0, 0.02);
+  }
+
+  .job-card:hover {
+    box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.1),
+      0 4px 12px -4px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(16, 185, 129, 0.12);
+    border-color: var(--border-default);
+    transform: translateY(-2px);
+  }
+
+  .job-card:focus-within {
+    box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.1),
+      0 4px 12px -4px rgba(0, 0, 0, 0.04), 0 0 0 2px rgba(16, 185, 129, 0.2);
+    outline: none;
+  }
+
+  /* Apply button - Emerald gradient with soft shadow */
+  .apply-btn {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 2px 8px -2px rgba(5, 150, 105, 0.4),
+      0 1px 2px -1px rgba(5, 150, 105, 0.2);
+  }
+
+  .apply-btn:hover {
+    background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+    box-shadow: 0 4px 12px -2px rgba(5, 150, 105, 0.5),
+      0 2px 4px -1px rgba(5, 150, 105, 0.3);
+    transform: translateY(-1px);
+  }
+
+  .apply-btn:active {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    box-shadow: 0 1px 4px -1px rgba(5, 150, 105, 0.3);
+    transform: translateY(0);
+  }
+
+  /* ============================================
+     AMBER SECONDARY ACCENT STYLES
+     ============================================ */
+
+  /* Amber CTA button - for secondary actions */
+  .btn-amber {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+    box-shadow: 0 2px 8px -2px rgba(245, 158, 11, 0.4),
+      0 1px 2px -1px rgba(245, 158, 11, 0.2);
+  }
+
+  .btn-amber:hover {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    box-shadow: 0 4px 12px -2px rgba(245, 158, 11, 0.5),
+      0 2px 4px -1px rgba(245, 158, 11, 0.3);
+    transform: translateY(-1px);
+  }
+
+  /* Amber badge - for highlights, "new", "hot" etc. */
+  .badge-amber {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    color: #b45309;
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    font-weight: 500;
+  }
+
+  /* Amber tag pill */
+  .tag-amber {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+  }
+
+  /* ============================================
+     ENHANCED HOVER & INTERACTION STATES
+     ============================================ */
+
+  /* Links with emerald hover */
+  .link-emerald {
+    color: var(--text-muted);
+    transition: color 200ms ease;
+  }
+
+  .link-emerald:hover {
+    color: var(--accent-600);
+  }
+
+  /* Card with emerald accent on hover */
+  .card-accent-hover {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-accent-hover::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent-400), var(--accent-600));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 300ms ease;
+  }
+
+  .card-accent-hover:hover::before {
+    transform: scaleX(1);
+  }
+
+  /* Glow effect on focus */
+  .glow-emerald:focus {
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15),
+      0 0 20px -5px rgba(16, 185, 129, 0.2);
+  }
+
+  /* Subtle emerald tint on card hover */
+  .card-tint-hover:hover {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 1) 0%,
+      rgba(236, 253, 245, 0.5) 100%
+    );
+  }
+
+  /* ============================================
+     GRADIENT BORDER EFFECTS
+     ============================================ */
+
+  .gradient-border {
+    position: relative;
+    background: var(--bg-elevated);
+    border-radius: var(--radius-xl);
+  }
+
+  .gradient-border::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      rgba(16, 185, 129, 0.3) 0%,
+      rgba(245, 158, 11, 0.2) 50%,
+      rgba(16, 185, 129, 0.3) 100%
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 300ms ease;
+  }
+
+  .gradient-border:hover::before {
+    opacity: 1;
+  }
+
+  /* ============================================
+     SUCCESS & HIGHLIGHT STATES
+     ============================================ */
+
+  /* Success message */
+  .alert-success {
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    color: #047857;
+    border-radius: var(--radius-lg);
+    padding: var(--space-3) var(--space-4);
+  }
+
+  /* Amber highlight box */
+  .highlight-amber {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    border-radius: var(--radius-lg);
+    padding: var(--space-3) var(--space-4);
+  }
+
+  /* Pulse animation for notifications */
+  .pulse-emerald {
+    animation: pulse-emerald 2s infinite;
+  }
+
+  @keyframes pulse-emerald {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+    }
+    50% {
+      box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+    }
+  }
+
+  /* ============================================
+     IMPROVED SKELETON LOADING
+     ============================================ */
+
+  .ui-skeleton {
+    @apply rounded-lg;
+    background: linear-gradient(
+      90deg,
+      rgba(231, 229, 228, 0.6) 0%,
+      rgba(250, 249, 247, 0.9) 50%,
+      rgba(231, 229, 228, 0.6) 100%
+    );
+    background-size: 200% 100%;
+    animation: ui-skeleton-shimmer 1.5s ease-in-out infinite;
+  }
+
+  /* ============================================
+     FLOATING LABEL INPUT STYLE
+     ============================================ */
+
+  .input-float-label {
+    position: relative;
+  }
+
+  .input-float-label input {
+    @apply w-full rounded-lg border bg-white px-3.5 py-3 text-sm outline-none;
+    border-color: var(--border-subtle);
+    transition: all 200ms ease;
+  }
+
+  .input-float-label input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  }
+
+  .input-float-label label {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: var(--text-muted);
+    pointer-events: none;
+    transition: all 200ms ease;
+    background: white;
+    padding: 0 4px;
+  }
+
+  .input-float-label input:focus + label,
+  .input-float-label input:not(:placeholder-shown) + label {
+    top: 0;
+    font-size: 11px;
+    color: var(--accent-600);
   }
 }
 
