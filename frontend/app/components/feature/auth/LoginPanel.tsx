@@ -45,6 +45,7 @@ export function LoginPanel() {
       }
     } catch (error: unknown) {
       if (isApiError(error)) {
+        console.log(error);
         const msg = error.message || "Login failed";
 
         setError("root", { type: "server", message: msg });
@@ -81,7 +82,7 @@ export function LoginPanel() {
             placeholder="Enter your email"
           />
           {errors.email && (
-            <div className="text-sm text-center text-red-500">
+            <div className="text-xs text-center text-red-500">
               {errors.email.message}
             </div>
           )}

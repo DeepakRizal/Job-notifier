@@ -49,16 +49,6 @@ export function HeroSection() {
               <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-slate-500 justify-center lg:justify-start">
                 <div className="inline-flex items-center gap-2">
                   <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-white/60 border border-slate-100 shadow-sm">
-                    <Zap size={14} />
-                  </span>
-                  <span>
-                    <strong className="text-slate-800">1.2k+</strong> matches
-                    found
-                  </span>
-                </div>
-
-                <div className="inline-flex items-center gap-2">
-                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-white/60 border border-slate-100 shadow-sm">
                     <Clock size={14} />
                   </span>
                   <span>
