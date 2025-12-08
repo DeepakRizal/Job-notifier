@@ -27,11 +27,7 @@ export async function apiFetch<T = unknown>(
       const status = err.response?.status;
       const data = err.response?.data;
 
-      throw new ApiError(
-        data?.error || err.message || "API error",
-        status,
-        data
-      );
+      throw new ApiError(data?.message, status, data);
     }
   }
 }

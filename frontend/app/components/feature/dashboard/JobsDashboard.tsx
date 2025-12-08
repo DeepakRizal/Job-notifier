@@ -100,7 +100,7 @@ export function JobsDashboard() {
   return (
     <div className="space-y-4">
       {/* Search + Filter Card */}
-      <div className="ui-card filter-shadow p-3">
+      <div className="bg-white rounded-xl border border-stone-100/80 filter-shadow p-4">
         <div className="space-y-3">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
             {/* Search input (pill) */}
@@ -122,7 +122,7 @@ export function JobsDashboard() {
                   setSearchQuery(e.target.value);
                   // reset page if you use paging: setPage(1)
                 }}
-                className="w-full pl-10 pr-10 py-2.5 rounded-full bg-surface border border-transparent outline-none filter-input-shadow  placeholder:text-text-muted transition"
+                className="w-full pl-10 pr-10 py-2.5 rounded-full bg-stone-50/60 border border-stone-200/60 outline-none ring-0 focus:ring-0 focus:outline-none placeholder:text-stone-400 text-stone-700 transition-all duration-200 focus:bg-white"
                 aria-label="Search jobs by title, company, or location"
               />
 
@@ -147,10 +147,10 @@ export function JobsDashboard() {
               onClick={() => setIsFilterOpen((s) => !s)}
               aria-expanded={isFilterOpen}
               aria-controls="role-filters"
-              className={`flex items-center gap-3 rounded-full px-4 py-2.5 transition-shadow focus:outline-none focus:ring-2 focus:ring-blue-200 ${
+              className={`flex items-center gap-3 rounded-full px-4 py-2.5 transition-all duration-200 outline-none border ${
                 isFilterOpen
-                  ? "shadow-sm bg-surface-subtle"
-                  : "bg-transparent hover:bg-surface-subtle"
+                  ? "bg-stone-50 border-stone-200"
+                  : "bg-transparent border-transparent hover:bg-stone-50/70 hover:border-stone-100"
               }`}
             >
               <div className="flex items-center gap-2">
@@ -159,7 +159,7 @@ export function JobsDashboard() {
                   Filter by role
                 </span>
                 {selectedFilter && (
-                  <span className="ml-2 inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700">
+                  <span className="ml-2 inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
                     {selectedFilter}
                   </span>
                 )}
@@ -180,16 +180,16 @@ export function JobsDashboard() {
               isFilterOpen ? "max-h-72 opacity-100" : "max-h-0 opacity-0"
             }`}
           >
-            <div className="flex flex-wrap items-center gap-2 pt-3">
+            <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-stone-100">
               <button
                 onClick={() => {
                   setSelectedFilter(null);
                   // reset page if you use paging: setPage(1)
                 }}
-                className={`text-sm px-3 py-1 rounded-full transition ${
+                className={`text-sm px-3.5 py-1.5 rounded-full transition-all duration-200 border ${
                   selectedFilter === null
-                    ? "bg-blue-50 text-blue-700 font-semibold"
-                    : "text-text-muted hover:text-text-title"
+                    ? "bg-emerald-500 text-white font-medium border-emerald-500 shadow-sm"
+                    : "text-stone-600 border-stone-200 hover:border-stone-300 hover:bg-stone-50"
                 }`}
                 aria-pressed={selectedFilter === null}
               >
@@ -205,10 +205,10 @@ export function JobsDashboard() {
                       setSelectedFilter(active ? null : role);
                       // reset page if you use paging: setPage(1)
                     }}
-                    className={`text-sm px-3 py-1 rounded-full transition ${
+                    className={`text-sm px-3.5 py-1.5 rounded-full transition-all duration-200 border ${
                       active
-                        ? "bg-blue-50 text-blue-700 font-semibold"
-                        : "text-text-muted hover:text-text-title"
+                        ? "bg-emerald-500 text-white font-medium border-emerald-500 shadow-sm"
+                        : "text-stone-600 border-stone-200 hover:border-stone-300 hover:bg-stone-50"
                     }`}
                     aria-pressed={active}
                   >

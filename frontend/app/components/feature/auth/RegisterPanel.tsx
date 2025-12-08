@@ -40,7 +40,9 @@ export function RegisterPanel() {
         router.push("/login");
       }
     } catch (error) {
+      console.log(error);
       if (isApiError(error)) {
+        console.log(error);
         const msg = error.message || "Registration failed";
 
         setError("root", { type: "server", message: msg });
