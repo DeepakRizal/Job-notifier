@@ -46,7 +46,7 @@ export async function tryApplySiteSort(page, sort) {
 
 /**
  * Set the Naukri "Experience" slider to exactly 0 years.
- * SIMPLE APPROACH: Click directly on the rail at 0 position.
+ * IMPROVED APPROACH: Multiple methods with better accuracy.
  *
  * @param {import('playwright').Page} page - Playwright page instance
  * @param {Object} opts - Options
@@ -57,7 +57,7 @@ export async function setNaukriExperienceSliderToZero(page, opts = {}) {
   const maxAttempts = opts.maxAttempts ?? 5;
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // Helper: Read slider state
+  // Helper: Read slider state with more details
   // ─────────────────────────────────────────────────────────────────────────────
   async function readState() {
     return page.evaluate(() => {
@@ -66,12 +66,26 @@ export async function setNaukriExperienceSliderToZero(page, opts = {}) {
 
       const handle = slider.querySelector(".handle");
       const innerSpan = handle?.querySelector(".inside span");
+      const labelLeft = document.querySelector(".bottom-label .left");
       const labelRight = document.querySelector(".bottom-label .right");
+      const track = slider.querySelector(".rc-slider-track");
+
+      // Get handle's left style value
+      const handleStyle = handle ? window.getComputedStyle(handle) : null;
+      const handleLeft = handleStyle?.left || handle?.style?.left || "unknown";
+
+      // Get track width
+      const trackStyle = track ? window.getComputedStyle(track) : null;
+      const trackWidth = trackStyle?.width || track?.style?.width || "unknown";
 
       return {
         hasNotSelectedClass: slider.classList.contains("not-selected"),
         handleInnerText: innerSpan?.textContent?.trim() ?? null,
+        labelLeftText: labelLeft?.textContent?.trim() ?? null,
         labelRightText: labelRight?.textContent?.trim() ?? null,
+        handleLeft,
+        trackWidth,
+        ariaValueNow: handle?.getAttribute("aria-valuenow") ?? null,
       };
     });
   }
@@ -81,60 +95,56 @@ export async function setNaukriExperienceSliderToZero(page, opts = {}) {
   // ─────────────────────────────────────────────────────────────────────────────
   function isAtZero(state) {
     if (!state) return false;
-    // Slider is at 0 when: no "not-selected" class, OR handle shows "0", OR right label is "30 Yrs"
-    return (
-      state.hasNotSelectedClass === false ||
-      state.handleInnerText === "0" ||
-      state.labelRightText === "30 Yrs"
+
+    // Check multiple conditions - the handle should show "0" when at zero
+    const handleShowsZero = state.handleInnerText === "0";
+    const sliderActivated = state.hasNotSelectedClass === false;
+
+    console.log(
+      `  → handleShowsZero: ${handleShowsZero}, sliderActivated: ${sliderActivated}`
     );
+
+    // We need BOTH: slider activated AND handle shows 0
+    return handleShowsZero && sliderActivated;
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // Method 1: Click on the rail at the ABSOLUTE leftmost position (0%)
+  // Method 1: Click directly on the left edge of the slider track
   // ─────────────────────────────────────────────────────────────────────────────
-  async function clickOnRailAtZero() {
-    console.log("Method 1: Clicking on rail at 0 position...");
+  async function clickOnLeftEdge() {
+    console.log("📍 Method 1: Clicking on left edge of slider track...");
 
-    const railInfo = await page.evaluate(() => {
-      const rail = document.querySelector(".rc-slider-rail");
-      if (!rail) return null;
-      const rect = rail.getBoundingClientRect();
-      // Click at the VERY LEFT edge (0%), not +5px which lands at ~1 year
-      return { x: rect.left + 1, y: rect.top + rect.height / 2 };
+    const info = await page.evaluate(() => {
+      const slider = document.querySelector(".rc-slider");
+      const track = slider?.querySelector(".rc-slider-rail") || slider;
+      if (!track) return null;
+
+      const rect = track.getBoundingClientRect();
+      console.log("Track rect:", rect);
+
+      // Click at exactly 0% position (left edge)
+      return {
+        x: rect.left + 2, // 2px from left edge
+        y: rect.top + rect.height / 2,
+        width: rect.width,
+        left: rect.left,
+      };
     });
 
-    if (railInfo) {
-      await page.mouse.click(railInfo.x, railInfo.y);
-      await page.waitForTimeout(500);
+    if (info) {
+      console.log(
+        `  Clicking at x=${info.x}, y=${info.y} (track width: ${info.width})`
+      );
+      await page.mouse.click(info.x, info.y);
+      await page.waitForTimeout(800);
     }
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // Method 2: Use Playwright's built-in click on the slider element
+  // Method 2: Drag handle all the way to the left
   // ─────────────────────────────────────────────────────────────────────────────
-  async function clickSliderElement() {
-    console.log("Method 2: Using Playwright click on slider...");
-
-    try {
-      const slider = await page.$(".rc-slider");
-      if (slider) {
-        const box = await slider.boundingBox();
-        if (box) {
-          // Click at the VERY LEFT edge of the slider (0%)
-          await page.mouse.click(box.x + 1, box.y + box.height / 2);
-          await page.waitForTimeout(500);
-        }
-      }
-    } catch (e) {
-      console.log("Method 2 failed:", e.message);
-    }
-  }
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // Method 3: Drag the handle with simple mouse operations - drag PAST left edge
-  // ─────────────────────────────────────────────────────────────────────────────
-  async function dragHandle() {
-    console.log("Method 3: Dragging handle to 0...");
+  async function dragHandleToLeft() {
+    console.log("📍 Method 2: Dragging handle to the left...");
 
     const coords = await page.evaluate(() => {
       const slider = document.querySelector(".rc-slider");
@@ -148,168 +158,234 @@ export async function setNaukriExperienceSliderToZero(page, opts = {}) {
       return {
         handleX: handleRect.left + handleRect.width / 2,
         handleY: handleRect.top + handleRect.height / 2,
-        // Target PAST the left edge to ensure we hit 0
-        targetX: railRect.left - 10,
-        railRight: railRect.right - 5,
+        railLeft: railRect.left,
+        railWidth: railRect.width,
       };
     });
 
-    if (!coords) return;
+    if (!coords) {
+      console.log("  Could not get coordinates");
+      return;
+    }
 
-    // First drag to the RIGHT to "activate" the slider
+    console.log(
+      `  Handle at x=${coords.handleX}, rail left=${coords.railLeft}`
+    );
+
+    // Move to handle, press down, drag to left edge, release
     await page.mouse.move(coords.handleX, coords.handleY);
+    await page.waitForTimeout(100);
     await page.mouse.down();
-    await page.mouse.move(coords.railRight, coords.handleY, { steps: 5 });
+    await page.waitForTimeout(100);
+
+    // Drag in small steps to the left edge (position 0)
+    const targetX = coords.railLeft + 2; // 2px from left edge = 0 years
+    const steps = 20;
+    for (let i = 1; i <= steps; i++) {
+      const currentX =
+        coords.handleX - ((coords.handleX - targetX) * i) / steps;
+      await page.mouse.move(currentX, coords.handleY);
+      await page.waitForTimeout(30);
+    }
+
+    await page.waitForTimeout(100);
     await page.mouse.up();
-    await page.waitForTimeout(300);
-
-    // Re-get handle position
-    const newCoords = await page.evaluate(() => {
-      const handle = document.querySelector(".rc-slider .handle");
-      if (!handle) return null;
-      const rect = handle.getBoundingClientRect();
-      const rail = document.querySelector(".rc-slider-rail");
-      const railRect = rail?.getBoundingClientRect();
-      return {
-        handleX: rect.left + rect.width / 2,
-        handleY: rect.top + rect.height / 2,
-        // Drag PAST the left edge to ensure we hit 0
-        targetX: railRect ? railRect.left - 10 : rect.left - 100,
-      };
-    });
-
-    if (!newCoords) return;
-
-    // Now drag to the LEFT (PAST the edge to ensure 0)
-    await page.mouse.move(newCoords.handleX, newCoords.handleY);
-    await page.mouse.down();
-    await page.mouse.move(newCoords.targetX, newCoords.handleY, { steps: 10 });
-    await page.mouse.up();
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(800);
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // Method 4: Direct DOM manipulation + trigger React events
+  // Method 3: Use keyboard after focusing the slider
   // ─────────────────────────────────────────────────────────────────────────────
-  async function forceDOM() {
-    console.log("Method 4: Forcing DOM state...");
+  async function useKeyboard() {
+    console.log("📍 Method 3: Using keyboard to set slider to 0...");
 
-    await page.evaluate(() => {
-      const slider = document.querySelector(".rc-slider");
-      const handle = slider?.querySelector(".handle");
-      const innerSpan = handle?.querySelector(".inside span");
-      const labelRight = document.querySelector(".bottom-label .right");
-      const track = slider?.querySelector(".rc-slider-track");
+    try {
+      // Focus on the handle
+      await page.evaluate(() => {
+        const handle = document.querySelector(".rc-slider .handle");
+        if (handle) {
+          handle.focus();
+          handle.click();
+        }
+      });
+      await page.waitForTimeout(300);
 
-      if (slider) slider.classList.remove("not-selected");
-      if (handle) {
-        handle.style.left = "calc(0% - 15px)";
-        handle.setAttribute("aria-valuenow", "0");
-      }
-      if (innerSpan) {
-        innerSpan.classList.remove("small");
-        innerSpan.textContent = "0";
-      }
-      if (labelRight) labelRight.textContent = "30 Yrs";
-      if (track) {
-        track.style.left = "0%";
-        track.style.width = "0%";
-      }
+      // Press Home key to go to minimum value
+      await page.keyboard.press("Home");
+      await page.waitForTimeout(500);
 
-      // Try to trigger React's onChange
-      if (slider) {
-        const event = new MouseEvent("click", {
-          bubbles: true,
-          cancelable: true,
-          clientX: slider.getBoundingClientRect().left + 5,
-          clientY: slider.getBoundingClientRect().top + 10,
-        });
-        slider.dispatchEvent(event);
+      // Or press Left arrow many times to ensure we're at 0
+      for (let i = 0; i < 35; i++) {
+        await page.keyboard.press("ArrowLeft");
+        await page.waitForTimeout(50);
       }
+      await page.waitForTimeout(500);
+    } catch (e) {
+      console.log("  Keyboard method failed:", e.message);
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Method 4: Click on "Fresher" label if it exists
+  // ─────────────────────────────────────────────────────────────────────────────
+  async function clickFresherLabel() {
+    console.log("📍 Method 4: Looking for Fresher checkbox/label...");
+
+    const clicked = await page.evaluate(() => {
+      // Look for fresher checkbox or label
+      const fresherLabels = Array.from(
+        document.querySelectorAll("label, span, div")
+      ).filter((el) => el.textContent?.toLowerCase().includes("fresher"));
+
+      for (const label of fresherLabels) {
+        const checkbox =
+          label.querySelector('input[type="checkbox"]') ||
+          label.closest("label")?.querySelector('input[type="checkbox"]');
+        if (checkbox && !checkbox.checked) {
+          checkbox.click();
+          return true;
+        }
+        // Try clicking the label itself
+        if (label.tagName === "LABEL" || label.closest("label")) {
+          label.click();
+          return true;
+        }
+      }
+      return false;
     });
 
-    await page.waitForTimeout(300);
+    if (clicked) {
+      console.log("  Clicked on Fresher option");
+      await page.waitForTimeout(800);
+    } else {
+      console.log("  No Fresher option found");
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Method 5: Direct position calculation
+  // ─────────────────────────────────────────────────────────────────────────────
+  async function directPositionClick() {
+    console.log("📍 Method 5: Direct position calculation for 0 years...");
+
+    const info = await page.evaluate(() => {
+      const slider = document.querySelector(".rc-slider");
+      if (!slider) return null;
+
+      const rect = slider.getBoundingClientRect();
+      // Naukri slider is 0-30 years
+      // 0 years = 0% = left edge
+      const zeroPosition = rect.left + 5; // Small offset from left edge
+
+      return {
+        x: zeroPosition,
+        y: rect.top + rect.height / 2,
+        sliderWidth: rect.width,
+        sliderLeft: rect.left,
+      };
+    });
+
+    if (info) {
+      console.log(
+        `  Slider width: ${info.sliderWidth}, clicking at x=${info.x}`
+      );
+
+      // Double click to ensure it registers
+      await page.mouse.click(info.x, info.y);
+      await page.waitForTimeout(300);
+      await page.mouse.click(info.x, info.y);
+      await page.waitForTimeout(800);
+    }
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
   // Main execution
   // ─────────────────────────────────────────────────────────────────────────────
   try {
+    console.log("\n🎯 Starting experience slider adjustment to 0 years...");
+
     // Wait for slider to appear
-    console.log("Waiting for slider...");
+    console.log("⏳ Waiting for slider...");
     await page
       .waitForSelector(".rc-slider", { timeout: 10000 })
       .catch(() => null);
-    await page.waitForTimeout(1000); // Extra wait for React hydration
+    await page.waitForTimeout(1500); // Extra wait for React hydration
 
     // Scroll slider into view
     await page.evaluate(() => {
-      const el = document.querySelector(
-        ".styles_filterContainer__4aQaD[data-type='slider']"
-      );
+      const el =
+        document.querySelector(".rc-slider") ||
+        document.querySelector("[data-type='slider']");
       el?.scrollIntoView({ behavior: "instant", block: "center" });
     });
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(500);
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      console.log(`\n=== Attempt ${attempt}/${maxAttempts} ===`);
+      console.log(`\n═══════════════════════════════════════`);
+      console.log(`   ATTEMPT ${attempt}/${maxAttempts}`);
+      console.log(`═══════════════════════════════════════`);
 
       // Check initial state
       const initialState = await readState();
-      console.log("Initial state:", initialState);
+      console.log("📊 Current state:", JSON.stringify(initialState, null, 2));
 
       if (isAtZero(initialState)) {
-        console.log("Already at 0! Verifying...");
-        await page.waitForTimeout(500);
-        const verifyState = await readState();
-        if (isAtZero(verifyState)) {
-          console.log("Confirmed at 0!");
-          return { success: true, attempts: attempt, snapshot: verifyState };
-        }
+        console.log("✅ Already at 0 years!");
+        return { success: true, attempts: attempt, snapshot: initialState };
       }
 
-      // Try all methods in sequence
-      await clickOnRailAtZero();
+      // Try methods in sequence
+      await clickOnLeftEdge();
       let state = await readState();
-      console.log("After Method 1:", state);
+      console.log("📊 After Method 1:", state?.handleInnerText);
       if (isAtZero(state)) {
-        await page.waitForTimeout(500);
+        console.log("✅ Success with Method 1!");
         return { success: true, attempts: attempt, snapshot: state };
       }
 
-      await clickSliderElement();
+      await dragHandleToLeft();
       state = await readState();
-      console.log("After Method 2:", state);
+      console.log("📊 After Method 2:", state?.handleInnerText);
       if (isAtZero(state)) {
-        await page.waitForTimeout(500);
+        console.log("✅ Success with Method 2!");
         return { success: true, attempts: attempt, snapshot: state };
       }
 
-      await dragHandle();
+      await useKeyboard();
       state = await readState();
-      console.log("After Method 3:", state);
+      console.log("📊 After Method 3:", state?.handleInnerText);
       if (isAtZero(state)) {
-        await page.waitForTimeout(500);
+        console.log("✅ Success with Method 3!");
         return { success: true, attempts: attempt, snapshot: state };
       }
 
-      await forceDOM();
+      await clickFresherLabel();
       state = await readState();
-      console.log("After Method 4:", state);
+      console.log("📊 After Method 4:", state?.handleInnerText);
       if (isAtZero(state)) {
-        await page.waitForTimeout(500);
+        console.log("✅ Success with Method 4!");
+        return { success: true, attempts: attempt, snapshot: state };
+      }
+
+      await directPositionClick();
+      state = await readState();
+      console.log("📊 After Method 5:", state?.handleInnerText);
+      if (isAtZero(state)) {
+        console.log("✅ Success with Method 5!");
         return { success: true, attempts: attempt, snapshot: state };
       }
 
       // Wait before next attempt
-      await page.waitForTimeout(500 + attempt * 200);
+      console.log("⏳ Waiting before next attempt...");
+      await page.waitForTimeout(1000);
     }
 
     const finalState = await readState();
-    console.log("All attempts failed. Final state:", finalState);
+    console.log("\n❌ All attempts failed!");
+    console.log("📊 Final state:", JSON.stringify(finalState, null, 2));
     return { success: false, attempts: maxAttempts, snapshot: finalState };
   } catch (err) {
-    console.error("setNaukriExperienceSliderToZero error:", err.message);
+    console.error("❌ setNaukriExperienceSliderToZero error:", err.message);
     return { success: false, attempts: 0, snapshot: null, error: err.message };
   }
 }
