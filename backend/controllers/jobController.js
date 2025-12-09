@@ -4,12 +4,12 @@ import User from "../models/User.js";
 import Match from "../models/Match.js";
 import { sendEmail } from "../utils/email.js";
 
-const NOTIFY_WINDOW_HOURS = Number(process.env.NOTIFY_WINDOW_HOURS || 5);
+const NOTIFY_WINDOW_HOURS = Number(process.env.NOTIFY_WINDOW_HOURS || 24);
 const NOTIFY_WINDOW_MS = NOTIFY_WINDOW_HOURS * 60 * 60 * 1000;
 
 function parseExperience(expStr) {
   if (!expStr) return null;
-  // simple regex: captures "8-12", "3-5", "0-1", "2 Yrs" etc.
+
   const m = expStr.match(/(\d+)(?:\s*-\s*(\d+))?/);
   if (!m) return null;
   const min = parseInt(m[1], 10);
@@ -96,8 +96,6 @@ export const test = async (req, res, next) => {
         // run your matcher for this single job (returns created Match docs)
         const newMatches = await matchSingleJob(job);
 
-        console.log(newMatches);
-
         // notify matched users (example: email)
         for (const m of newMatches) {
           // load the user so we know where/how to notify
@@ -112,12 +110,10 @@ export const test = async (req, res, next) => {
           ) {
             const ok = await sendEmail(user.email, job);
             if (ok) {
-              // mark match as notified (atomic):
               await Match.findByIdAndUpdate(m._id, {
                 $set: { notified: true, notifiedAt: new Date() },
               });
             } else {
-              // if send failed, leave notified=false so you can retry later / log failure
               console.warn("Failed to send email to", user.email);
             }
           }
@@ -266,18 +262,34 @@ export const getMyJobs = async (req, res, next) => {
 
   // filter the jobs that matches the user skills
   const filteredJobs = jobs.filter((job) => {
+    // Build combined job text for searching
     const jobTextRaw = `${job.title || ""} ${job.description || ""} ${
       job.company || ""
-    }`;
+    } ${Array.isArray(job.tags) ? job.tags.join(" ") : ""}`.toLowerCase();
 
-    const jobText = jobTextRaw
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, " ")
-      .trim()
-      .split(" ")
+    // Normalize user skills
+    const normalizedSkills = skills
+      .map((s) => String(s).toLowerCase().trim())
       .filter(Boolean);
 
-    return skills.some((skill) => jobText.includes(skill));
+    // Check if any skill matches (flexible matching)
+    return normalizedSkills.some((skill) => {
+      // Direct substring match (handles "react" in "reactjs", "node" in "nodejs")
+      if (jobTextRaw.includes(skill)) return true;
+
+      // Also check job tags specifically with bidirectional matching
+      if (Array.isArray(job.tags)) {
+        for (const tag of job.tags) {
+          const normalizedTag = String(tag).toLowerCase().trim();
+          // skill in tag OR tag in skill
+          if (normalizedTag.includes(skill) || skill.includes(normalizedTag)) {
+            return true;
+          }
+        }
+      }
+
+      return false;
+    });
   });
 
   // return those jobs to the logged in user
