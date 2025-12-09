@@ -65,7 +65,7 @@ export function SkillsPreferencesPanel() {
             <div>
               <h2 className="text-base font-semibold text-stone-900">
                 Skills & Preferences
-              </h2>
+        </h2>
               <p className="text-sm text-stone-500">
                 Configure how jobs are matched to your profile
               </p>
@@ -100,8 +100,8 @@ export function SkillsPreferencesPanel() {
           </div>
 
           {/* Skills list */}
-          <div className="flex flex-wrap items-center gap-2">
-            {user?.skills.map((skill: string, index) => (
+        <div className="flex flex-wrap items-center gap-2">
+          {user?.skills.map((skill: string, index) => (
               <div
                 key={index}
                 className="group inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-stone-700 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-lg transition-colors"
@@ -114,39 +114,39 @@ export function SkillsPreferencesPanel() {
                 >
                   <X size={14} />
                 </button>
-              </div>
-            ))}
+            </div>
+          ))}
 
             {/* Add skill input */}
             {adding && (
               <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border-2 border-emerald-300 rounded-lg shadow-sm">
-                <input
-                  ref={inputRef}
-                  value={value}
-                  onChange={(e) => setValue(e.target.value)}
-                  onKeyDown={handleKeyDown}
+              <input
+                ref={inputRef}
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                onKeyDown={handleKeyDown}
                   placeholder="Type skill..."
-                  aria-label="Add skill"
+                aria-label="Add skill"
                   className="w-32 bg-transparent outline-none text-sm text-stone-800 placeholder:text-stone-400"
-                  disabled={loading}
-                />
-                <button
-                  onClick={() => addSkill(value)}
+                disabled={loading}
+              />
+              <button
+                onClick={() => addSkill(value)}
                   disabled={loading || !value.trim()}
                   className="px-2 py-0.5 text-xs font-medium text-white bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed rounded transition-colors"
-                >
+              >
                   {loading ? "..." : "Add"}
-                </button>
-                <button
-                  onClick={() => {
-                    setAdding(false);
-                    setValue("");
+              </button>
+              <button
+                onClick={() => {
+                  setAdding(false);
+                  setValue("");
                     setError(null);
-                  }}
+                }}
                   className="text-stone-400 hover:text-stone-600 transition-colors"
-                >
+              >
                   <X size={14} />
-                </button>
+              </button>
               </div>
             )}
 
@@ -155,7 +155,7 @@ export function SkillsPreferencesPanel() {
                 No skills added yet. Click &quot;Add skill&quot; to get started.
               </p>
             )}
-          </div>
+            </div>
 
           {error && (
             <p className="mt-2 text-xs text-red-500 flex items-center gap-1">
@@ -177,9 +177,9 @@ export function SkillsPreferencesPanel() {
             <p className="text-xs text-stone-500 mt-0.5">
               Choose how you want to receive job alerts
             </p>
-          </div>
+      </div>
 
-          <div className="space-y-3">
+      <div className="space-y-3">
             {/* Email notifications */}
             <div className="flex items-center justify-between p-4 bg-stone-50 border border-stone-100 rounded-xl">
               <div className="flex items-center gap-3">
