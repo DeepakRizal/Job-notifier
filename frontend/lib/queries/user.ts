@@ -10,3 +10,13 @@ export async function updateUserSkill(skill: string) {
 
   return res.user;
 }
+
+export async function removeUserSkill(skill: string) {
+  const res = (await apiFetch("/auth/remove-skill", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    data: { skill },
+  })) as AuthResponse;
+
+  return res.user;
+}

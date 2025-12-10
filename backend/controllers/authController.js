@@ -133,10 +133,30 @@ export const getMe = async (req, res, next) => {
 //handler for updating the user
 
 export const updateUser = async (req, res, next) => {
-  console.log(req.body, req.user._id);
   // use find by id and update method and update the user
 
   const skills = [...req.user.skills, req.body.skill];
+
+  const updatedUser = await User.findByIdAndUpdate(
+    req.user._id,
+    { skills },
+    {
+      new: true,
+    }
+  ).select("-password -__v");
+
+  //once the user is updated send the user back in the response
+
+  res.status(200).json({
+    success: true,
+    user: updatedUser,
+  });
+};
+
+export const removeSkill = async (req, res) => {
+  const toBeRemoved = req.body.skill;
+
+  const skills = req.user.skills.filter((skill) => skill !== toBeRemoved);
 
   const updatedUser = await User.findByIdAndUpdate(
     req.user._id,

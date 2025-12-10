@@ -16,17 +16,17 @@ function escapeRegExp(string) {
 function termsMatch(term1, term2) {
   const t1 = term1.toLowerCase().trim();
   const t2 = term2.toLowerCase().trim();
-  
+
   // Exact match
   if (t1 === t2) return true;
-  
+
   // One contains the other (handles "react" vs "reactjs", "node" vs "nodejs")
   if (t1.includes(t2) || t2.includes(t1)) return true;
-  
+
   // Handle common variations (e.g., "react.js" vs "reactjs")
   const normalize = (s) => s.replace(/[.\-_\s]/g, "").toLowerCase();
   if (normalize(t1) === normalize(t2)) return true;
-  
+
   return false;
 }
 
@@ -36,17 +36,17 @@ function termsMatch(term1, term2) {
 function countTextMatches(jobText, skills) {
   let count = 0;
   const lowerText = jobText.toLowerCase();
-  
+
   for (const skill of skills) {
     const safe = escapeRegExp(skill);
-    
+
     // Try word boundary match first (exact word)
     const exactRe = new RegExp(`\\b${safe}\\b`, "i");
     if (exactRe.test(jobText)) {
       count++;
       continue;
     }
-    
+
     // Fallback: check if skill appears anywhere (for compound terms like "reactjs")
     if (lowerText.includes(skill.toLowerCase())) {
       count++;

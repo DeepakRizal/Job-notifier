@@ -5,6 +5,7 @@ import {
   registerUser,
   updateUser,
   logoutUser,
+  removeSkill,
 } from "../controllers/authController.js";
 import authMiddleware from "../middlewares/auth.js";
 
@@ -15,5 +16,6 @@ router.post("/login", loginUser);
 router.post("/logout", logoutUser);
 router.get("/me", authMiddleware, getMe);
 router.patch("/update", authMiddleware, updateUser);
+router.patch("/remove-skill", authMiddleware, removeSkill);
 
 export default router;

@@ -1,5 +1,5 @@
 "use client";
-import { updateUserSkill } from "@/lib/queries/user";
+import { removeUserSkill, updateUserSkill } from "@/lib/queries/user";
 import { useUserStore } from "@/lib/stores/user-store";
 import { Target, Plus, X, Bell, Mail, MessageSquare } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -42,6 +42,12 @@ export function SkillsPreferencesPanel() {
     setValue("");
   }
 
+  async function handleRemoveSkills(skill: string) {
+    const updatedUser = await removeUserSkill(skill);
+
+    setUser(updatedUser);
+  }
+
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -65,7 +71,7 @@ export function SkillsPreferencesPanel() {
             <div>
               <h2 className="text-base font-semibold text-stone-900">
                 Skills & Preferences
-        </h2>
+              </h2>
               <p className="text-sm text-stone-500">
                 Configure how jobs are matched to your profile
               </p>
@@ -83,7 +89,9 @@ export function SkillsPreferencesPanel() {
         <div>
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-sm font-semibold text-stone-800">Your Skills</h3>
+              <h3 className="text-sm font-semibold text-stone-800">
+                Your Skills
+              </h3>
               <p className="text-xs text-stone-500 mt-0.5">
                 Add skills to get matched with relevant job postings
               </p>
@@ -100,53 +108,53 @@ export function SkillsPreferencesPanel() {
           </div>
 
           {/* Skills list */}
-        <div className="flex flex-wrap items-center gap-2">
-          {user?.skills.map((skill: string, index) => (
+          <div className="flex flex-wrap items-center gap-2">
+            {user?.skills.map((skill: string, index) => (
               <div
                 key={index}
                 className="group inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-stone-700 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-lg transition-colors"
               >
                 <span>{skill}</span>
                 <button
-                  onClick={() => {}}
+                  onClick={() => handleRemoveSkills(skill)}
                   aria-label={`Remove ${skill}`}
                   className="text-stone-400 hover:text-red-500 transition-colors"
                 >
                   <X size={14} />
                 </button>
-            </div>
-          ))}
+              </div>
+            ))}
 
             {/* Add skill input */}
             {adding && (
               <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border-2 border-emerald-300 rounded-lg shadow-sm">
-              <input
-                ref={inputRef}
-                value={value}
-                onChange={(e) => setValue(e.target.value)}
-                onKeyDown={handleKeyDown}
+                <input
+                  ref={inputRef}
+                  value={value}
+                  onChange={(e) => setValue(e.target.value)}
+                  onKeyDown={handleKeyDown}
                   placeholder="Type skill..."
-                aria-label="Add skill"
+                  aria-label="Add skill"
                   className="w-32 bg-transparent outline-none text-sm text-stone-800 placeholder:text-stone-400"
-                disabled={loading}
-              />
-              <button
-                onClick={() => addSkill(value)}
+                  disabled={loading}
+                />
+                <button
+                  onClick={() => addSkill(value)}
                   disabled={loading || !value.trim()}
                   className="px-2 py-0.5 text-xs font-medium text-white bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed rounded transition-colors"
-              >
-                  {loading ? "..." : "Add"}
-              </button>
-              <button
-                onClick={() => {
-                  setAdding(false);
-                  setValue("");
+                >
+                  {loading ? "Adding..." : "Add"}
+                </button>
+                <button
+                  onClick={() => {
+                    setAdding(false);
+                    setValue("");
                     setError(null);
-                }}
+                  }}
                   className="text-stone-400 hover:text-stone-600 transition-colors"
-              >
+                >
                   <X size={14} />
-              </button>
+                </button>
               </div>
             )}
 
@@ -155,7 +163,7 @@ export function SkillsPreferencesPanel() {
                 No skills added yet. Click &quot;Add skill&quot; to get started.
               </p>
             )}
-            </div>
+          </div>
 
           {error && (
             <p className="mt-2 text-xs text-red-500 flex items-center gap-1">
@@ -177,9 +185,9 @@ export function SkillsPreferencesPanel() {
             <p className="text-xs text-stone-500 mt-0.5">
               Choose how you want to receive job alerts
             </p>
-      </div>
+          </div>
 
-      <div className="space-y-3">
+          <div className="space-y-3">
             {/* Email notifications */}
             <div className="flex items-center justify-between p-4 bg-stone-50 border border-stone-100 rounded-xl">
               <div className="flex items-center gap-3">
@@ -198,10 +206,18 @@ export function SkillsPreferencesPanel() {
               <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-100 rounded-full">
                 <span className="flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500 text-white">
                   <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                    <path d="M1 4L3.5 6.5L9 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path
+                      d="M1 4L3.5 6.5L9 1"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                 </span>
-                <span className="text-xs font-medium text-emerald-700">Enabled</span>
+                <span className="text-xs font-medium text-emerald-700">
+                  Enabled
+                </span>
               </div>
             </div>
 
@@ -232,9 +248,7 @@ export function SkillsPreferencesPanel() {
                   <MessageSquare size={16} className="text-stone-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-stone-600">
-                    Telegram
-                  </p>
+                  <p className="text-sm font-medium text-stone-600">Telegram</p>
                   <p className="text-xs text-stone-400">
                     Receive alerts on Telegram
                   </p>
