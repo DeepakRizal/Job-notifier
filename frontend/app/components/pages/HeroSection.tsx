@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import { Zap, Clock, Shield, ArrowRight } from "lucide-react";
+import { useUserStore } from "@/lib/stores/user-store";
 
 export function HeroSection() {
+  const { user } = useUserStore();
+
   return (
     <section className="relative min-h-[85vh] flex items-center overflow-hidden">
       {/* Background decorations */}
@@ -81,18 +84,36 @@ export function HeroSection() {
             </p>
 
             {/* CTAs */}
-            <div className="mt-10 flex flex-col sm:flex-row items-start gap-4">
-              <Link
-                href="/register"
-                className="group inline-flex items-center gap-3 px-7 py-4 rounded-xl bg-emerald-500 text-white font-semibold shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 hover:shadow-emerald-500/30 hover:shadow-xl active:scale-[0.98] transition-all duration-200"
-              >
-                <Zap
-                  size={20}
-                  className="transition-transform group-hover:rotate-12"
+            {!user && (
+              <div className="mt-10 flex flex-col sm:flex-row items-start gap-4">
+                <Link
+                  href="/register"
+                  className="group inline-flex items-center gap-3 px-7 py-4 rounded-xl bg-emerald-500 text-white font-semibold shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 hover:shadow-emerald-500/30 hover:shadow-xl active:scale-[0.98] transition-all duration-200"
+                >
+                  <Zap
+                    size={20}
+                    className="transition-transform group-hover:rotate-12"
+                  />
+                  Get started — it&apos;s free
+                </Link>
+              </div>
+            )}
+
+            {user && (
+              <form className="mt-6 flex gap-2 max-w-md">
+                <input
+                  placeholder="e.g. mern stack developer fresher"
+                  className="flex-1 rounded-lg px-4 py-3 border border-stone-200 outline-none"
+                  aria-label="Search query"
                 />
-                Get started — it&apos;s free
-              </Link>
-            </div>
+                <button
+                  type="submit"
+                  className="rounded-lg px-4 py-3 bg-emerald-500 cursor-pointer text-white font-semibold"
+                >
+                  Track
+                </button>
+              </form>
+            )}
 
             {/* Trust indicators */}
             <div className="mt-12 pt-8 border-t border-stone-100">
