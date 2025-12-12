@@ -17,7 +17,7 @@ function parseExperience(expStr) {
   return { min, max };
 }
 
-export const test = async (req, res, next) => {
+export const discoverJob = async (req, res, next) => {
   try {
     const body = req.body;
 
@@ -51,6 +51,11 @@ export const test = async (req, res, next) => {
     doc.minExperience = doc.experience ? doc.experience.min : null;
     doc.maxExperience = doc.experience ? doc.experience.max : null;
 
+    // Handle owner(s) - can be a single owner ID or array of owner IDs
+    const ownerIds = body.owner || body.owners || [];
+    const ownersArray = Array.isArray(ownerIds) ? ownerIds : [ownerIds];
+    const validOwners = ownersArray.filter((id) => id && typeof id === "string");
+
     // upsert by url if available, otherwise by sourceId, otherwise insert new
     const query = url
       ? { url }
@@ -59,10 +64,16 @@ export const test = async (req, res, next) => {
       : { title: doc.title, company: doc.company };
 
     // Use $set for fields, but $setOnInsert for createdAt if you want to track creation
+    // Add owners to the owners array if they don't already exist
     const update = {
       $set: doc,
       $setOnInsert: { createdAt: new Date() },
     };
+
+    // Add owners to the owners array if there are valid owners
+    if (validOwners.length > 0) {
+      update.$addToSet = { owners: { $each: validOwners } };
+    }
 
     // Ask Mongo for the raw result to detect upsert-insert
     const updateResult = await Job.updateOne(query, update, { upsert: true });
