@@ -39,7 +39,8 @@ connectDb();
 //mounting routes
 app.use("/api/auth", authRouter);
 app.use("/api/jobs", authMiddleware, jobRouter);
-app.use("/api/queries", authMiddleware, queriesRouter);
+// Queries router: GET / (for worker) doesn't need auth, others do
+app.use("/api/queries", queriesRouter);
 
 //Api health route
 app.get("/api/health", (req, res) => {
