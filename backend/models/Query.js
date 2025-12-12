@@ -4,7 +4,12 @@ const QuerySchema = new mongoose.Schema({
   query: {
     type: String,
     required: true,
-    unique: true,
+    index: true,
+  },
+  owner: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
     index: true,
   },
   active: {
@@ -19,5 +24,8 @@ const QuerySchema = new mongoose.Schema({
     type: Date,
   },
 });
+
+// Compound unique index: same query can exist for different users
+QuerySchema.index({ query: 1, owner: 1 }, { unique: true });
 
 export default mongoose.models.Query || mongoose.model("Query", QuerySchema);
