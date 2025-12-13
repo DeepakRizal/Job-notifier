@@ -77,6 +77,18 @@ export function Header() {
             )}
             {!isLoading && user && (
               <Link
+                href="/queries"
+                className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                  isActive("/queries")
+                    ? "bg-accent/10 text-accent"
+                    : "text-text-muted hover:bg-surface-subtle hover:text-text-title"
+                }`}
+              >
+                Queries
+              </Link>
+            )}
+            {!isLoading && user && (
+              <Link
                 href="/settings"
                 className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                   isActive("/settings")
@@ -156,6 +168,17 @@ export function Header() {
                   }`}
                 >
                   Dashboard
+                </Link>
+                <Link
+                  href="/queries"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`block rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                    isActive("/queries")
+                      ? "bg-accent/10 text-accent"
+                      : "text-text-muted hover:bg-surface-subtle hover:text-text-title"
+                  }`}
+                >
+                  Queries
                 </Link>
                 <Link
                   href="/settings"
