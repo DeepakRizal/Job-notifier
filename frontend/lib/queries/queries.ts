@@ -54,3 +54,13 @@ export async function toggleQueryActive(
   });
 }
 
+export async function updateQuery(
+  queryId: string,
+  query: string
+): Promise<void> {
+  await apiFetch(`/queries/${queryId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    data: { query },
+  });
+}

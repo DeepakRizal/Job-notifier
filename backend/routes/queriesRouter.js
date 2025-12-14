@@ -4,7 +4,7 @@ import {
   getQueries,
   getMyQueries,
   deleteQuery,
-  toggleQueryActive,
+  updateQuery,
 } from "../controllers/queryController.js";
 import authMiddleware from "../middlewares/auth.js";
 
@@ -17,6 +17,7 @@ router.get("/", getQueries);
 router.post("/", authMiddleware, createQueries);
 router.get("/mine", authMiddleware, getMyQueries);
 router.delete("/:id", authMiddleware, deleteQuery);
-router.patch("/:id", authMiddleware, toggleQueryActive);
+
+router.patch("/:id", authMiddleware, updateQuery);
 
 export default router;

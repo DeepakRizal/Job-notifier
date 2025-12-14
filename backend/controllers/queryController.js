@@ -59,7 +59,6 @@ export const createQueries = async (req, res) => {
 };
 
 export const getMyQueries = async (req, res) => {
-    
   if (!req.user || !req.user._id) {
     return res.status(401).json({
       success: false,
@@ -110,7 +109,7 @@ export const deleteQuery = async (req, res) => {
   });
 };
 
-export const toggleQueryActive = async (req, res) => {
+export const updateQuery = async (req, res) => {
   if (!req.user || !req.user._id) {
     return res.status(401).json({
       success: false,
@@ -119,18 +118,42 @@ export const toggleQueryActive = async (req, res) => {
   }
 
   const { id } = req.params;
-  const { active } = req.body;
+  const { query, active } = req.body;
 
-  if (typeof active !== "boolean") {
+  const updates = {};
+
+  if (query !== undefined) {
+    if (typeof query !== "string" || !query.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Query must be a non-empty string.",
+      });
+    }
+
+    updates.query = query.trim();
+  }
+
+  if (active !== undefined) {
+    if (typeof active !== "boolean") {
+      return res.status(400).json({
+        success: false,
+        message: "Active must be a boolean.",
+      });
+    }
+
+    updates.active = active;
+  }
+
+  if (Object.keys(updates).length === 0) {
     return res.status(400).json({
       success: false,
-      message: "Invalid active value. Must be a boolean.",
+      message: "No valid fields provided to update.",
     });
   }
 
   const doc = await Query.findOneAndUpdate(
     { _id: id, owner: req.user._id },
-    { $set: { active } },
+    { $set: updates },
     { new: true }
   );
 
@@ -141,7 +164,7 @@ export const toggleQueryActive = async (req, res) => {
     });
   }
 
-  return res.json({
+  return res.status(200).json({
     success: true,
     query: {
       _id: doc._id.toString(),
