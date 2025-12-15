@@ -35,18 +35,21 @@ export async function fetchMyJobs({
   page = 1,
   postedAt,
   limit = 20,
+  experience,
 }: {
   q?: string;
   role?: string | null;
   postedAt?: string | undefined;
   page?: number;
   limit?: number;
+  experience?: string | undefined;
 }) {
   const params = new URLSearchParams();
   // q -> backend expects `q`
   if (q) params.set("q", q);
   if (role) params.set("role", role);
   if (postedAt) params.set("postedAt", postedAt);
+  if (experience) params.set("experience", experience);
 
   params.set("page", String(page));
   params.set("limit", String(limit));

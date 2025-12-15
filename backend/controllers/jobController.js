@@ -11,6 +11,12 @@ const POSTED_AT_RANGES = {
   "30 days": 30,
 };
 
+const EXPERIENCE_RANGES = {
+  entry: { min: 0, max: 2 },
+  mid: { min: 3, max: 5 },
+  senior: { min: 6, max: 50 },
+};
+
 const NOTIFY_WINDOW_HOURS = Number(process.env.NOTIFY_WINDOW_HOURS || 24);
 const NOTIFY_WINDOW_MS = NOTIFY_WINDOW_HOURS * 60 * 60 * 1000;
 
@@ -237,6 +243,7 @@ export const getMyJobs = async (req, res, next) => {
   const role = (req.query.role || "").trim() || null;
   const page = Math.max(1, parseInt(req.query.page, 10) || 1);
   const postedAt = (req.query.postedAt || "").trim() || null;
+  const experienceParam = (req.query.experience || "").trim();
   const limit = Math.max(100, parseInt(req.query.limit, 10) || 20);
 
   const escapeForRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -293,7 +300,26 @@ export const getMyJobs = async (req, res, next) => {
     });
   }
 
-  console.log(andConditions);
+  if (experienceParam) {
+    const experienceLevels = experienceParam
+      .split(",")
+      .map((e) => e.trim())
+      .filter(Boolean);
+
+    const experienceConditions = experienceLevels
+      .map((level) => EXPERIENCE_RANGES[level])
+      .filter(Boolean)
+      .map((range) => ({
+        minExperience: { $lte: range.max },
+        maxExperience: { $gte: range.min },
+      }));
+
+    if (experienceConditions.length > 0) {
+      andConditions.push({
+        $or: experienceConditions,
+      });
+    }
+  }
 
   const filter = andConditions.length ? { $and: andConditions } : {};
 

@@ -70,21 +70,33 @@ export function JobsDashboard() {
     error,
   } = useQuery<JobDocument[], Error>({
     // key is based on logical filters: search term, role, and postedAt range
-    queryKey: ["jobs", { q: debouncedQuery, role: selectedRole, postedAt: selectedPostedDate }],
+    queryKey: [
+      "jobs",
+      {
+        q: debouncedQuery,
+        role: selectedRole,
+        postedAt: selectedPostedDate,
+        experience: selectedExperience,
+      },
+    ],
     queryFn: () =>
       fetchMyJobs({
         q: debouncedQuery || undefined,
         role: selectedRole ?? undefined,
         postedAt: selectedPostedDate ?? undefined,
+        experience:
+          selectedExperience.length > 0
+            ? selectedExperience.join(",")
+            : undefined,
       }),
     staleTime: 30_000,
-    keepPreviousData: true,
   });
 
   const filteredJobs =
     jobs?.map((job) => {
       // Use the real posting time when available so UI matches backend filters.
-      const canonicalPostedAt = job.postedAt ?? job.discoveredAt ?? job.createdAt;
+      const canonicalPostedAt =
+        job.postedAt ?? job.discoveredAt ?? job.createdAt;
 
       return {
         id: job._id,
@@ -202,13 +214,13 @@ export function JobsDashboard() {
                   return (
                     <button
                       key={lvl.value}
-                      onClick={() =>
+                      onClick={() => {
                         setSelectedExperience(
                           active
                             ? selectedExperience.filter((v) => v !== lvl.value)
                             : [...selectedExperience, lvl.value]
-                        )
-                      }
+                        );
+                      }}
                       className={`px-3 py-1.5 rounded-full border text-sm transition
                   ${
                     active
