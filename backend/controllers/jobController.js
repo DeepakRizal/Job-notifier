@@ -4,6 +4,13 @@ import User from "../models/User.js";
 import Match from "../models/Match.js";
 import { sendEmail } from "../utils/email.js";
 
+const POSTED_AT_RANGES = {
+  "24h": 1,
+  "3 days": 3,
+  "7 days": 7,
+  "30 days": 30,
+};
+
 const NOTIFY_WINDOW_HOURS = Number(process.env.NOTIFY_WINDOW_HOURS || 24);
 const NOTIFY_WINDOW_MS = NOTIFY_WINDOW_HOURS * 60 * 60 * 1000;
 
@@ -54,7 +61,9 @@ export const discoverJob = async (req, res, next) => {
     // Handle owner(s) - can be a single owner ID or array of owner IDs
     const ownerIds = body.owner || body.owners || [];
     const ownersArray = Array.isArray(ownerIds) ? ownerIds : [ownerIds];
-    const validOwners = ownersArray.filter((id) => id && typeof id === "string");
+    const validOwners = ownersArray.filter(
+      (id) => id && typeof id === "string"
+    );
 
     // upsert by url if available, otherwise by sourceId, otherwise insert new
     const query = url
@@ -145,8 +154,11 @@ export const getAllJobs = async (req, res, next) => {
   try {
     const q = (req.query.q || "").trim();
     const roleParam = (req.query.role || "").trim() || null;
+    const postedAt = (req.query.postedAt || "").trim() || null;
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const limit = Math.min(100, parseInt(req.query.limit, 10) || 20);
+
+    console.log(req.query);
 
     const escapeForRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -181,11 +193,22 @@ export const getAllJobs = async (req, res, next) => {
       andConditions.push(roleCondition);
     }
 
+    if (postedAt && POSTED_AT_RANGES[postedAt]) {
+      const days = POSTED_AT_RANGES[postedAt];
+
+      const cutOffDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+      andConditions.push({
+        postedAt: { $gte: cutOffDate },
+      });
+    }
+
     const filter = andConditions.length ? { $and: andConditions } : {};
 
     const total = await Job.countDocuments(filter);
 
-    const sort = { createdAt: -1 };
+    // Prefer most recently posted jobs, falling back to newest discovered/created.
+    const sort = { postedAt: -1, discoveredAt: -1, createdAt: -1 };
 
     const jobs = await Job.find(filter)
       .sort(sort)
@@ -213,6 +236,7 @@ export const getMyJobs = async (req, res, next) => {
   const q = (req.query.q || "").trim();
   const role = (req.query.role || "").trim() || null;
   const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+  const postedAt = (req.query.postedAt || "").trim() || null;
   const limit = Math.max(100, parseInt(req.query.limit, 10) || 20);
 
   const escapeForRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -258,6 +282,18 @@ export const getMyJobs = async (req, res, next) => {
 
     andConditions.push(roleCondition);
   }
+
+  if (postedAt && POSTED_AT_RANGES[postedAt]) {
+    const days = POSTED_AT_RANGES[postedAt];
+
+    const cutOffDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+    andConditions.push({
+      postedAt: { $gte: cutOffDate },
+    });
+  }
+
+  console.log(andConditions);
 
   const filter = andConditions.length ? { $and: andConditions } : {};
 

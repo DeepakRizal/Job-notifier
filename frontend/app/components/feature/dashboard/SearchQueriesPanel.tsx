@@ -19,7 +19,6 @@ import {
   Clock,
   Check,
   X,
-  Sparkles,
 } from "lucide-react";
 
 import { useForm } from "react-hook-form";
@@ -128,45 +127,8 @@ export function SearchQueriesPanel() {
     }
   }
 
-  const activeQueries = queries.filter((q) => q.active).length;
-
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-6">
-      {/* Header Section */}
-      <div>
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-            <Sparkles className="h-6 w-6 text-primary" />
-          </div>
-          <div>
-            <h2 className="text-balance text-2xl font-bold tracking-tight text-foreground">
-              Query Management
-            </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Create and manage your job search queries
-            </p>
-          </div>
-        </div>
-
-        {/* Stats Row */}
-        {queries.length > 0 && (
-          <div className="mt-6 flex gap-4">
-            <div className="rounded-xl border border-border/50 bg-card px-4 py-3">
-              <div className="text-xs text-muted-foreground">Active</div>
-              <div className="mt-1 text-2xl font-bold text-primary">
-                {activeQueries}
-              </div>
-            </div>
-            <div className="rounded-xl border border-border/50 bg-card px-4 py-3">
-              <div className="text-xs text-muted-foreground">Total</div>
-              <div className="mt-1 text-2xl font-bold text-foreground">
-                {queries.length}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
       {/* Add Query Form */}
       <div className="rounded-2xl border border-border/50 bg-card p-6 shadow-sm">
         <form onSubmit={handleSubmit(onSubmit)}>
