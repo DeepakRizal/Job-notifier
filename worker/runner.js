@@ -11,9 +11,9 @@ const BACKEND = process.env.WORKER_BACKEND_URL || "http://localhost:4000";
 const USER_AGENT =
   process.env.USER_AGENT ||
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
-const SCRAPE_INTERVAL = Number(process.env.SCRAPE_INTERVAL || 300) * 1000; // 5 minutes
+const SCRAPE_INTERVAL = Number(process.env.SCRAPE_INTERVAL || 300) * 1000;
 const QUERY_POLL_INTERVAL =
-  Number(process.env.QUERY_POLL_INTERVAL || 30) * 1000; // 30 seconds
+  Number(process.env.QUERY_POLL_INTERVAL || 30) * 1000;
 const LRU_SIZE = Number(process.env.WORKER_LRU_SIZE || 1000);
 
 //creating least recently used cached
@@ -113,11 +113,11 @@ async function fetchQueries() {
 }
 
 // Cache of queries grouped by canonical form
-let queryCache = new Map(); // Map<canonicalQuery, Set<ownerId>>
+let queryCache = new Map();
 
 // Function to deduplicate queries and group by canonical form
 function deduplicateQueries(queries) {
-  const grouped = new Map(); // Map<canonicalQuery, Set<ownerId>>
+  const grouped = new Map();
 
   for (const queryObj of queries) {
     const queryText = typeof queryObj === "string" ? queryObj : queryObj.query;

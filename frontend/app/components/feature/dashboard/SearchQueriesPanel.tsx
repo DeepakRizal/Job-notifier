@@ -4,7 +4,7 @@ import {
   createQuery,
   deleteQuery,
   getMyQueries,
-  Query,
+  type Query,
   toggleQueryActive,
   updateQuery,
 } from "@/lib/queries/queries";
@@ -17,11 +17,15 @@ import {
   Edit2,
   Search,
   Clock,
+  Check,
+  X,
+  Sparkles,
 } from "lucide-react";
-import ArcLoader from "../../layout/ArcLoader";
+
 import { useForm } from "react-hook-form";
 import { isApiError } from "@/lib/errors";
 import { useState } from "react";
+import ArcLoader from "../../layout/ArcLoader";
 
 interface Input {
   query: string;
@@ -43,6 +47,7 @@ export function SearchQueriesPanel() {
     register,
     handleSubmit,
     setError,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<Input>();
 
@@ -62,6 +67,7 @@ export function SearchQueriesPanel() {
       queryClient.invalidateQueries({
         queryKey: ["queries"],
       });
+      reset();
     },
   });
 
@@ -99,7 +105,14 @@ export function SearchQueriesPanel() {
   }
 
   if (error) {
-    return <div className="text-red-500">Failed to load queries</div>;
+    return (
+      <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center">
+        <p className="text-sm font-medium text-red-900">
+          Failed to load queries
+        </p>
+        <p className="mt-1 text-xs text-red-700">Please try again later</p>
+      </div>
+    );
   }
 
   async function onSubmit(data: Input) {
@@ -108,203 +121,253 @@ export function SearchQueriesPanel() {
     } catch (error: unknown) {
       if (isApiError(error)) {
         console.log(error);
-        const msg = error.message || "Login failed";
+        const msg = error.message || "Failed to create query";
 
         setError("root", { type: "server", message: msg });
       }
     }
   }
 
+  const activeQueries = queries.filter((q) => q.active).length;
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-white rounded-xl border border-stone-100/80 filter-shadow p-6">
-        <div className="flex items-center justify-between mb-4">
+    <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-6">
+      {/* Header Section */}
+      <div>
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+            <Sparkles className="h-6 w-6 text-primary" />
+          </div>
           <div>
-            <h2 className="text-2xl font-bold text-text-title mb-2">
+            <h2 className="text-balance text-2xl font-bold tracking-tight text-foreground">
               Query Management
             </h2>
-            <p className="text-sm text-text-muted">
-              Manage your job search queries
+            <p className="mt-1 text-sm text-muted-foreground">
+              Create and manage your job search queries
             </p>
-          </div>
-
-          <div className="text-right">
-            <div className="text-xs text-text-muted">Total Queries</div>
-            <div className="text-2xl font-bold text-emerald-600">
-              {queries.length}
-            </div>
           </div>
         </div>
 
-        {/* Add Query (UI only for now) */}
-        <form onSubmit={handleSubmit(onSubmit)} className="mt-6">
-          <div className="flex gap-2">
+        {/* Stats Row */}
+        {queries.length > 0 && (
+          <div className="mt-6 flex gap-4">
+            <div className="rounded-xl border border-border/50 bg-card px-4 py-3">
+              <div className="text-xs text-muted-foreground">Active</div>
+              <div className="mt-1 text-2xl font-bold text-primary">
+                {activeQueries}
+              </div>
+            </div>
+            <div className="rounded-xl border border-border/50 bg-card px-4 py-3">
+              <div className="text-xs text-muted-foreground">Total</div>
+              <div className="mt-1 text-2xl font-bold text-foreground">
+                {queries.length}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Add Query Form */}
+      <div className="rounded-2xl border border-border/50 bg-card p-6 shadow-sm">
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="flex flex-col gap-3 sm:flex-row">
             <div className="relative flex-1">
               <Search
                 size={18}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted"
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
               />
               <input
                 type="text"
                 {...register("query", {
                   required: "Query is required!",
                 })}
-                placeholder="e.g., react developer"
-                className="w-full pl-10 pr-4 py-3 rounded-lg bg-stone-50/60 border border-stone-200/60 outline-none"
+                placeholder="e.g., Senior React Developer in San Francisco"
+                className="h-12 w-full rounded-xl border border-border bg-background pl-11 pr-4 text-sm outline-none ring-offset-background transition-all placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
               {errors.query && (
-                <div className="text-xs text-center text-red-500">
+                <p className="mt-2 text-xs text-destructive">
                   {errors.query.message}
-                </div>
+                </p>
               )}
             </div>
 
-            <button className="px-6 py-3 bg-emerald-500 text-white rounded-lg font-medium hover:bg-emerald-600 flex items-center gap-2">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex h-12 cursor-pointer items-center justify-center gap-2 rounded-xl bg-primary px-6 font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            >
               <Plus size={18} />
-              {isSubmitting ? "Adding" : "Add Query"}
+              <span className="whitespace-nowrap">
+                {isSubmitting ? "Adding..." : "Add Query"}
+              </span>
             </button>
           </div>
+          {errors.root && (
+            <p className="mt-2 text-xs text-destructive">
+              {errors.root.message}
+            </p>
+          )}
         </form>
       </div>
 
       {/* Queries List */}
-      <div className="space-y-4">
-        {queries.map((query) => (
-          <div
-            key={query._id}
-            className="bg-white rounded-xl border border-stone-100/80 filter-shadow p-6"
-          >
-            <div className="flex items-start justify-between gap-4">
-              {/* Query Info */}
-              <div>
-                <div className="flex items-center gap-3 mb-2">
+      <div className="space-y-3">
+        {queries.length === 0 ? (
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-muted/20 py-16">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+              <Search className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <p className="mt-4 text-sm font-medium text-foreground">
+              No queries yet
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Add your first search query to get started
+            </p>
+          </div>
+        ) : (
+          queries.map((query) => (
+            <div
+              key={query._id}
+              className="group rounded-2xl border border-border/50 bg-card p-6 shadow-sm transition-all hover:border-border hover:shadow-md"
+            >
+              <div className="flex items-start justify-between gap-4">
+                {/* Query Info */}
+                <div className="min-w-0 flex-1">
+                  <div className="mb-3 flex flex-wrap items-center gap-3">
+                    {editing.editingId === query._id ? (
+                      <input
+                        value={editing.editingValue}
+                        onChange={(e) =>
+                          setEditing((prevState) => ({
+                            ...prevState,
+                            editingValue: e.target.value,
+                          }))
+                        }
+                        className="h-9 flex-1 rounded-lg border border-border bg-background px-3 text-sm outline-none ring-offset-background transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
+                        autoFocus
+                      />
+                    ) : (
+                      <h3 className="text-balance text-lg font-semibold leading-relaxed text-foreground">
+                        {query.query}
+                      </h3>
+                    )}
+
+                    {query.active ? (
+                      <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                        <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                        Active
+                      </span>
+                    ) : (
+                      <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
+                        <PowerOff size={12} />
+                        Inactive
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Clock size={12} />
+                    <span>
+                      Created {new Date(query.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex shrink-0 items-start gap-1">
                   {editing.editingId === query._id ? (
-                    <input
-                      value={editing.editingValue}
-                      onChange={(e) =>
-                        setEditing((prevState) => ({
-                          ...prevState,
-                          editingValue: e.target.value,
-                        }))
-                      }
-                      className="px-2 py-1 border rounded-md text-sm outline-none focus:ring-2 focus:ring-emerald-500"
-                      autoFocus
-                    />
-                  ) : (
-                    <h3 className="text-lg font-semibold text-text-title">
-                      {query.query}
-                    </h3>
-                  )}
+                    <>
+                      <button
+                        disabled={
+                          updateQueryMutation.isPending ||
+                          !editing.editingValue.trim()
+                        }
+                        onClick={() => {
+                          if (!editing.editingValue.trim()) return;
 
-                  {query.active ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 border border-emerald-200">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                      Active
-                    </span>
+                          updateQueryMutation.mutate(
+                            { id: query._id, query: editing.editingValue },
+                            {
+                              onSuccess: () => {
+                                setEditing({
+                                  editingId: null,
+                                  editingValue: "",
+                                });
+                              },
+                            }
+                          );
+                        }}
+                        className="flex h-9 items-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-medium text-primary-foreground transition-all hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <Check size={14} />
+                        Save
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setEditing({
+                            editingId: null,
+                            editingValue: "",
+                          });
+                        }}
+                        className="flex h-9 items-center gap-1.5 rounded-lg border border-border bg-background px-3 text-xs font-medium text-foreground transition-all hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                      >
+                        <X size={14} />
+                        Cancel
+                      </button>
+                    </>
                   ) : (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-600 border border-stone-200">
-                      <PowerOff size={12} />
-                      Inactive
-                    </span>
+                    <>
+                      <button
+                        onClick={() => {
+                          setEditing({
+                            editingId: query._id,
+                            editingValue: query.query,
+                          });
+                        }}
+                        className="flex h-9 w-9 items-center justify-center rounded-lg transition-all hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                        title="Edit query"
+                      >
+                        <Edit2 size={16} className="text-muted-foreground" />
+                      </button>
+
+                      <button
+                        onClick={() =>
+                          toggleQueryMutation.mutate({
+                            id: query._id,
+                            active: !query.active,
+                          })
+                        }
+                        disabled={editing.editingId === query._id}
+                        className="flex h-9 w-9 items-center justify-center rounded-lg transition-all hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        title={
+                          query.active ? "Deactivate query" : "Activate query"
+                        }
+                      >
+                        {query.active ? (
+                          <PowerOff
+                            size={16}
+                            className="text-muted-foreground"
+                          />
+                        ) : (
+                          <Power size={16} className="text-primary" />
+                        )}
+                      </button>
+
+                      <button
+                        onClick={() => deleteQueryMutation.mutate(query._id)}
+                        disabled={editing.editingId === query._id}
+                        className="flex h-9 w-9 items-center justify-center rounded-lg transition-all hover:bg-destructive/10 focus:outline-none focus:ring-2 focus:ring-destructive focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        title="Delete query"
+                      >
+                        <Trash2 size={16} className="text-destructive" />
+                      </button>
+                    </>
                   )}
                 </div>
-
-                <div className="flex items-center gap-1 text-xs text-text-muted">
-                  <Clock size={12} />
-                  <span>
-                    Created {new Date(query.createdAt).toLocaleDateString()}
-                  </span>
-                </div>
-              </div>
-
-              {/* Actions (UI only) */}
-              <div className="flex items-start gap-2">
-                {editing.editingId === query._id ? (
-                  <>
-                    <button
-                      disabled={updateQueryMutation.isPending}
-                      onClick={() => {
-                        if (!editing.editingValue.trim()) return;
-
-                        updateQueryMutation.mutate(
-                          { id: query._id, query: editing.editingValue },
-                          {
-                            onSuccess: () => {
-                              setEditing({
-                                editingId: null,
-                                editingValue: "",
-                              });
-                            },
-                          }
-                        );
-                      }}
-                      className="px-3 py-1 text-sm bg-emerald-500 text-white rounded-md"
-                    >
-                      Save
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setEditing({
-                          editingId: null,
-                          editingValue: "",
-                        });
-                      }}
-                      className="px-3 py-1 text-sm border rounded-md"
-                    >
-                      Cancel
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      onClick={() => {
-                        setEditing({
-                          editingId: query._id,
-                          editingValue: query.query,
-                        });
-                      }}
-                      className="p-2 rounded-lg hover:bg-stone-100"
-                    >
-                      <Edit2 size={18} className="text-stone-600" />
-                    </button>
-
-                    <button
-                      onClick={() =>
-                        toggleQueryMutation.mutate({
-                          id: query._id,
-                          active: !query.active,
-                        })
-                      }
-                      disabled={editing.editingId === query._id}
-                      className="p-2 rounded-lg hover:bg-stone-100"
-                    >
-                      {query.active ? (
-                        <PowerOff size={18} className="text-stone-600" />
-                      ) : (
-                        <Power size={18} className="text-emerald-600" />
-                      )}
-                    </button>
-
-                    <button
-                      onClick={() => deleteQueryMutation.mutate(query._id)}
-                      className="p-2 rounded-lg hover:bg-red-50"
-                      disabled={editing.editingId === query._id}
-                    >
-                      <Trash2 size={18} className="text-red-500" />
-                    </button>
-                  </>
-                )}
               </div>
             </div>
-          </div>
-        ))}
-
-        {queries.length === 0 && (
-          <div className="text-center text-text-muted py-8">
-            No queries added yet
-          </div>
+          ))
         )}
       </div>
     </div>

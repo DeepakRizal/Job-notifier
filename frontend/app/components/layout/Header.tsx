@@ -68,7 +68,7 @@ export function Header() {
                 href="/dashboard"
                 className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                   isActive("/dashboard")
-                    ? "bg-accent/10 text-accent"
+                    ? "bg-accent/10 text-emerald-600"
                     : "text-text-muted hover:bg-surface-subtle hover:text-text-title"
                 }`}
               >
@@ -80,7 +80,7 @@ export function Header() {
                 href="/queries"
                 className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                   isActive("/queries")
-                    ? "bg-accent/10 text-accent"
+                    ? "bg-accent/10 text-emerald-600"
                     : "text-text-muted hover:bg-surface-subtle hover:text-text-title"
                 }`}
               >
@@ -92,7 +92,7 @@ export function Header() {
                 href="/settings"
                 className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                   isActive("/settings")
-                    ? "bg-accent/10 text-accent"
+                    ? "bg-accent/10 text-emerald-600"
                     : "text-text-muted hover:bg-surface-subtle hover:text-text-title"
                 }`}
               >
@@ -115,7 +115,7 @@ export function Header() {
                 href="/login"
                 className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                   isActive("/login")
-                    ? "bg-accent/10 text-accent"
+                    ? "bg-accent/10 text-emerald-600"
                     : "text-text-muted hover:bg-surface-subtle hover:text-text-title"
                 }`}
               >
@@ -128,7 +128,7 @@ export function Header() {
                 href="/register"
                 className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                   isActive("/register")
-                    ? "bg-accent/10 text-accent"
+                    ? "bg-accent/10 text-emerald-600"
                     : "text-text-muted hover:bg-surface-subtle hover:text-text-title"
                 }`}
               >
@@ -163,7 +163,7 @@ export function Header() {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`block rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                     isActive("/dashboard")
-                      ? "bg-accent/10 text-accent"
+                      ? "bg-accent/10 text-emerald-600"
                       : "text-text-muted hover:bg-surface-subtle hover:text-text-title"
                   }`}
                 >
@@ -174,7 +174,7 @@ export function Header() {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`block rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                     isActive("/queries")
-                      ? "bg-accent/10 text-accent"
+                      ? "bg-accent/10 text-emerald-600"
                       : "text-text-muted hover:bg-surface-subtle hover:text-text-title"
                   }`}
                 >
@@ -185,7 +185,7 @@ export function Header() {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`block rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                     isActive("/settings")
-                      ? "bg-accent/10 text-accent"
+                      ? "bg-accent/10 text-emerald-600"
                       : "text-text-muted hover:bg-surface-subtle hover:text-text-title"
                   }`}
                 >
@@ -208,7 +208,7 @@ export function Header() {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`block rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                     isActive("/login")
-                      ? "bg-accent/10 text-accent"
+                      ? "bg-accent/10 text-emerald-600"
                       : "text-text-muted hover:bg-surface-subtle hover:text-text-title"
                   }`}
                 >
@@ -219,7 +219,7 @@ export function Header() {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`block rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                     isActive("/register")
-                      ? "bg-accent/10 text-accent"
+                      ? "bg-accent/10 text-emerald-600"
                       : "text-text-muted hover:bg-surface-subtle hover:text-text-title"
                   }`}
                 >

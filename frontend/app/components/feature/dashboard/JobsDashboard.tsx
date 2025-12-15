@@ -112,25 +112,25 @@ export function JobsDashboard() {
   return (
     <div className="space-y-4">
       {/* Search + Filter */}
-      <div className="flex gap-3">
+      <div className="flex items-center gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500" />
           <input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search jobs..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-full border"
+            className="w-full rounded-full border border-stone-300 bg-stone-50 pl-10 pr-4 py-2.5 text-stone-900 placeholder:text-stone-400 focus:border-stone-400 focus:ring-2 focus:ring-stone-200"
           />
         </div>
 
         <button
           onClick={() => setIsFilterModalOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-full border"
+          className="flex shrink-0 items-center gap-2 rounded-full border border-stone-300 bg-stone-50 px-4 py-2 text-stone-700 hover:bg-stone-100 focus:ring-2 focus:ring-stone-200"
         >
           <Filter size={16} />
           Filters
           {activeFiltersCount > 0 && (
-            <span className="bg-emerald-100 text-emerald-700 text-xs px-2 rounded-full">
+            <span className="rounded-full bg-stone-200 px-2 text-xs text-stone-700">
               {activeFiltersCount}
             </span>
           )}
@@ -154,12 +154,6 @@ export function JobsDashboard() {
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="border rounded px-3 py-2"
-                />
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
                   className="border rounded px-3 py-2"
                 />
               </div>
