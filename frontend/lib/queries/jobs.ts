@@ -15,7 +15,8 @@ export async function fetchJobs({
   limit?: number;
 }) {
   const params = new URLSearchParams();
-  if (q) params.set("role", q);
+  // q -> backend expects `q`
+  if (q) params.set("q", q);
   if (role) params.set("role", role);
 
   params.set("page", String(page));
@@ -32,21 +33,28 @@ export async function fetchMyJobs({
   q,
   role,
   page = 1,
+  postedAt,
   limit = 20,
+  experience,
 }: {
   q?: string;
   role?: string | null;
+  postedAt?: string | undefined;
   page?: number;
   limit?: number;
+  experience?: string | undefined;
 }) {
   const params = new URLSearchParams();
-  if (q) params.set("role", q);
+  // q -> backend expects `q`
+  if (q) params.set("q", q);
   if (role) params.set("role", role);
+  if (postedAt) params.set("postedAt", postedAt);
+  if (experience) params.set("experience", experience);
 
   params.set("page", String(page));
   params.set("limit", String(limit));
 
-  const url = `/jobs?${params.toString()}`;
+  const url = `/jobs/mine?${params.toString()}`;
 
   const res = (await apiFetch(url)) as JobsResponse;
 

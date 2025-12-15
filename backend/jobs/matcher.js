@@ -7,8 +7,9 @@ export async function matchSingleJob(job) {
   const createdMatches = [];
 
   for (const user of users) {
-    if (!user || !Array.isArray(user.skills) || user.skills.length === 0)
+    if (!user || !Array.isArray(user.skills) || user.skills.length === 0) {
       continue;
+    }
 
     const isMatch = doesJobMatchUser(job, user);
     if (!isMatch) continue;

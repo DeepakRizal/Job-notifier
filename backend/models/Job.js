@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import crypto from "crypto";
 
 const jobsSchema = new mongoose.Schema(
   {
@@ -68,6 +69,12 @@ const jobsSchema = new mongoose.Schema(
     },
     tags: {
       type: [String],
+      default: [],
+      index: true,
+    },
+    owners: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "User",
       default: [],
       index: true,
     },

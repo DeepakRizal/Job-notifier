@@ -4,12 +4,25 @@ import User from "../models/User.js";
 import Match from "../models/Match.js";
 import { sendEmail } from "../utils/email.js";
 
-const NOTIFY_WINDOW_HOURS = Number(process.env.NOTIFY_WINDOW_HOURS || 5);
+const POSTED_AT_RANGES = {
+  "24h": 1,
+  "3 days": 3,
+  "7 days": 7,
+  "30 days": 30,
+};
+
+const EXPERIENCE_RANGES = {
+  entry: { min: 0, max: 2 },
+  mid: { min: 3, max: 5 },
+  senior: { min: 6, max: 50 },
+};
+
+const NOTIFY_WINDOW_HOURS = Number(process.env.NOTIFY_WINDOW_HOURS || 24);
 const NOTIFY_WINDOW_MS = NOTIFY_WINDOW_HOURS * 60 * 60 * 1000;
 
 function parseExperience(expStr) {
   if (!expStr) return null;
-  // simple regex: captures "8-12", "3-5", "0-1", "2 Yrs" etc.
+
   const m = expStr.match(/(\d+)(?:\s*-\s*(\d+))?/);
   if (!m) return null;
   const min = parseInt(m[1], 10);
@@ -17,7 +30,7 @@ function parseExperience(expStr) {
   return { min, max };
 }
 
-export const test = async (req, res, next) => {
+export const discoverJob = async (req, res, next) => {
   try {
     const body = req.body;
 
@@ -51,6 +64,13 @@ export const test = async (req, res, next) => {
     doc.minExperience = doc.experience ? doc.experience.min : null;
     doc.maxExperience = doc.experience ? doc.experience.max : null;
 
+    // Handle owner(s) - can be a single owner ID or array of owner IDs
+    const ownerIds = body.owner || body.owners || [];
+    const ownersArray = Array.isArray(ownerIds) ? ownerIds : [ownerIds];
+    const validOwners = ownersArray.filter(
+      (id) => id && typeof id === "string"
+    );
+
     // upsert by url if available, otherwise by sourceId, otherwise insert new
     const query = url
       ? { url }
@@ -59,10 +79,16 @@ export const test = async (req, res, next) => {
       : { title: doc.title, company: doc.company };
 
     // Use $set for fields, but $setOnInsert for createdAt if you want to track creation
+    // Add owners to the owners array if they don't already exist
     const update = {
       $set: doc,
       $setOnInsert: { createdAt: new Date() },
     };
+
+    // Add owners to the owners array if there are valid owners
+    if (validOwners.length > 0) {
+      update.$addToSet = { owners: { $each: validOwners } };
+    }
 
     // Ask Mongo for the raw result to detect upsert-insert
     const updateResult = await Job.updateOne(query, update, { upsert: true });
@@ -96,8 +122,6 @@ export const test = async (req, res, next) => {
         // run your matcher for this single job (returns created Match docs)
         const newMatches = await matchSingleJob(job);
 
-        console.log(newMatches);
-
         // notify matched users (example: email)
         for (const m of newMatches) {
           // load the user so we know where/how to notify
@@ -112,12 +136,10 @@ export const test = async (req, res, next) => {
           ) {
             const ok = await sendEmail(user.email, job);
             if (ok) {
-              // mark match as notified (atomic):
               await Match.findByIdAndUpdate(m._id, {
                 $set: { notified: true, notifiedAt: new Date() },
               });
             } else {
-              // if send failed, leave notified=false so you can retry later / log failure
               console.warn("Failed to send email to", user.email);
             }
           }
@@ -138,8 +160,11 @@ export const getAllJobs = async (req, res, next) => {
   try {
     const q = (req.query.q || "").trim();
     const roleParam = (req.query.role || "").trim() || null;
+    const postedAt = (req.query.postedAt || "").trim() || null;
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const limit = Math.min(100, parseInt(req.query.limit, 10) || 20);
+
+    console.log(req.query);
 
     const escapeForRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -174,11 +199,22 @@ export const getAllJobs = async (req, res, next) => {
       andConditions.push(roleCondition);
     }
 
+    if (postedAt && POSTED_AT_RANGES[postedAt]) {
+      const days = POSTED_AT_RANGES[postedAt];
+
+      const cutOffDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+      andConditions.push({
+        postedAt: { $gte: cutOffDate },
+      });
+    }
+
     const filter = andConditions.length ? { $and: andConditions } : {};
 
     const total = await Job.countDocuments(filter);
 
-    const sort = { createdAt: -1 };
+    // Prefer most recently posted jobs, falling back to newest discovered/created.
+    const sort = { postedAt: -1, discoveredAt: -1, createdAt: -1 };
 
     const jobs = await Job.find(filter)
       .sort(sort)
@@ -206,6 +242,8 @@ export const getMyJobs = async (req, res, next) => {
   const q = (req.query.q || "").trim();
   const role = (req.query.role || "").trim() || null;
   const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+  const postedAt = (req.query.postedAt || "").trim() || null;
+  const experienceParam = (req.query.experience || "").trim();
   const limit = Math.max(100, parseInt(req.query.limit, 10) || 20);
 
   const escapeForRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -252,6 +290,37 @@ export const getMyJobs = async (req, res, next) => {
     andConditions.push(roleCondition);
   }
 
+  if (postedAt && POSTED_AT_RANGES[postedAt]) {
+    const days = POSTED_AT_RANGES[postedAt];
+
+    const cutOffDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+    andConditions.push({
+      postedAt: { $gte: cutOffDate },
+    });
+  }
+
+  if (experienceParam) {
+    const experienceLevels = experienceParam
+      .split(",")
+      .map((e) => e.trim())
+      .filter(Boolean);
+
+    const experienceConditions = experienceLevels
+      .map((level) => EXPERIENCE_RANGES[level])
+      .filter(Boolean)
+      .map((range) => ({
+        minExperience: { $lte: range.max },
+        maxExperience: { $gte: range.min },
+      }));
+
+    if (experienceConditions.length > 0) {
+      andConditions.push({
+        $or: experienceConditions,
+      });
+    }
+  }
+
   const filter = andConditions.length ? { $and: andConditions } : {};
 
   const sort = { postedAt: -1 };
@@ -266,18 +335,34 @@ export const getMyJobs = async (req, res, next) => {
 
   // filter the jobs that matches the user skills
   const filteredJobs = jobs.filter((job) => {
+    // Build combined job text for searching
     const jobTextRaw = `${job.title || ""} ${job.description || ""} ${
       job.company || ""
-    }`;
+    } ${Array.isArray(job.tags) ? job.tags.join(" ") : ""}`.toLowerCase();
 
-    const jobText = jobTextRaw
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, " ")
-      .trim()
-      .split(" ")
+    // Normalize user skills
+    const normalizedSkills = skills
+      .map((s) => String(s).toLowerCase().trim())
       .filter(Boolean);
 
-    return skills.some((skill) => jobText.includes(skill));
+    // Check if any skill matches (flexible matching)
+    return normalizedSkills.some((skill) => {
+      // Direct substring match (handles "react" in "reactjs", "node" in "nodejs")
+      if (jobTextRaw.includes(skill)) return true;
+
+      // Also check job tags specifically with bidirectional matching
+      if (Array.isArray(job.tags)) {
+        for (const tag of job.tags) {
+          const normalizedTag = String(tag).toLowerCase().trim();
+          // skill in tag OR tag in skill
+          if (normalizedTag.includes(skill) || skill.includes(normalizedTag)) {
+            return true;
+          }
+        }
+      }
+
+      return false;
+    });
   });
 
   // return those jobs to the logged in user

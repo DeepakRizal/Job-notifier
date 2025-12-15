@@ -9,6 +9,7 @@ dotenv.config({ path: "../.env" });
 import connectDb from "./db/db.js";
 import authRouter from "./routes/authRoutes.js";
 import jobRouter from "./routes/jobRoutes.js";
+import queriesRouter from "./routes/queriesRouter.js";
 import authMiddleware from "./middlewares/auth.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 
@@ -38,6 +39,8 @@ connectDb();
 //mounting routes
 app.use("/api/auth", authRouter);
 app.use("/api/jobs", authMiddleware, jobRouter);
+// Queries router: GET / (for worker) doesn't need auth, others do
+app.use("/api/queries", queriesRouter);
 
 //Api health route
 app.get("/api/health", (req, res) => {

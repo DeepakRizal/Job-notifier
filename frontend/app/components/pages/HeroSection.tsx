@@ -1,9 +1,40 @@
 "use client";
 
 import Link from "next/link";
-import { Zap, Clock, Shield, ArrowRight } from "lucide-react";
+import { Zap, Clock, Shield, ArrowRight, CheckCircle2 } from "lucide-react";
+import { useUserStore } from "@/lib/stores/user-store";
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createQuery } from "@/lib/queries/queries";
 
 export function HeroSection() {
+  const { user } = useUserStore();
+  const [queryInput, setQueryInput] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const queryClient = useQueryClient();
+
+  const createMutation = useMutation({
+    mutationFn: createQuery,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["myQueries"] });
+      setQueryInput("");
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
+    },
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!queryInput.trim() || queryInput.trim().length < 3) {
+      return;
+    }
+    try {
+      await createMutation.mutateAsync(queryInput.trim());
+    } catch (error) {
+      console.error("Failed to create query:", error);
+    }
+  };
+
   return (
     <section className="relative min-h-[85vh] flex items-center overflow-hidden">
       {/* Background decorations */}
@@ -81,18 +112,63 @@ export function HeroSection() {
             </p>
 
             {/* CTAs */}
-            <div className="mt-10 flex flex-col sm:flex-row items-start gap-4">
-              <Link
-                href="/register"
-                className="group inline-flex items-center gap-3 px-7 py-4 rounded-xl bg-emerald-500 text-white font-semibold shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 hover:shadow-emerald-500/30 hover:shadow-xl active:scale-[0.98] transition-all duration-200"
-              >
-                <Zap
-                  size={20}
-                  className="transition-transform group-hover:rotate-12"
-                />
-                Get started — it&apos;s free
-              </Link>
-            </div>
+            {!user && (
+              <div className="mt-10 flex flex-col sm:flex-row items-start gap-4">
+                <Link
+                  href="/register"
+                  className="group inline-flex items-center gap-3 px-7 py-4 rounded-xl bg-emerald-500 text-white font-semibold shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 hover:shadow-emerald-500/30 hover:shadow-xl active:scale-[0.98] transition-all duration-200"
+                >
+                  <Zap
+                    size={20}
+                    className="transition-transform group-hover:rotate-12"
+                  />
+                  Get started — it&apos;s free
+                </Link>
+              </div>
+            )}
+
+            {user && (
+              <div className="mt-6 max-w-md">
+                <form onSubmit={handleSubmit} className="flex gap-2">
+                  <input
+                    type="text"
+                    value={queryInput}
+                    onChange={(e) => setQueryInput(e.target.value)}
+                    placeholder="e.g. mern stack developer fresher"
+                    className="flex-1 rounded-lg px-4 py-3 border border-stone-200 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
+                    aria-label="Search query"
+                    disabled={createMutation.isPending}
+                    minLength={3}
+                  />
+                  <button
+                    type="submit"
+                    disabled={createMutation.isPending || queryInput.trim().length < 3}
+                    className="rounded-lg px-6 py-3 bg-emerald-500 cursor-pointer text-white font-semibold hover:bg-emerald-600 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {createMutation.isPending ? (
+                      <span className="animate-spin">⏳</span>
+                    ) : showSuccess ? (
+                      <>
+                        <CheckCircle2 size={18} />
+                        Added!
+                      </>
+                    ) : (
+                      "Track"
+                    )}
+                  </button>
+                </form>
+                {createMutation.isError && (
+                  <p className="mt-2 text-sm text-red-500">
+                    Failed to add query. Please try again.
+                  </p>
+                )}
+                {showSuccess && (
+                  <p className="mt-2 text-sm text-emerald-600">
+                    Query added! We&apos;ll start tracking jobs for this search.
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* Trust indicators */}
             <div className="mt-12 pt-8 border-t border-stone-100">

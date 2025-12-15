@@ -1,5 +1,5 @@
 "use client";
-import { updateUserSkill } from "@/lib/queries/user";
+import { removeUserSkill, updateUserSkill } from "@/lib/queries/user";
 import { useUserStore } from "@/lib/stores/user-store";
 import { Target, Plus, X, Bell, Mail, MessageSquare } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -40,6 +40,12 @@ export function SkillsPreferencesPanel() {
     setAdding(false);
     setLoading(false);
     setValue("");
+  }
+
+  async function handleRemoveSkills(skill: string) {
+    const updatedUser = await removeUserSkill(skill);
+
+    setUser(updatedUser);
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -83,7 +89,9 @@ export function SkillsPreferencesPanel() {
         <div>
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-sm font-semibold text-stone-800">Your Skills</h3>
+              <h3 className="text-sm font-semibold text-stone-800">
+                Your Skills
+              </h3>
               <p className="text-xs text-stone-500 mt-0.5">
                 Add skills to get matched with relevant job postings
               </p>
@@ -108,7 +116,7 @@ export function SkillsPreferencesPanel() {
               >
                 <span>{skill}</span>
                 <button
-                  onClick={() => {}}
+                  onClick={() => handleRemoveSkills(skill)}
                   aria-label={`Remove ${skill}`}
                   className="text-stone-400 hover:text-red-500 transition-colors"
                 >
@@ -135,7 +143,7 @@ export function SkillsPreferencesPanel() {
                   disabled={loading || !value.trim()}
                   className="px-2 py-0.5 text-xs font-medium text-white bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed rounded transition-colors"
                 >
-                  {loading ? "..." : "Add"}
+                  {loading ? "Adding..." : "Add"}
                 </button>
                 <button
                   onClick={() => {
@@ -198,10 +206,18 @@ export function SkillsPreferencesPanel() {
               <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-100 rounded-full">
                 <span className="flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500 text-white">
                   <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                    <path d="M1 4L3.5 6.5L9 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path
+                      d="M1 4L3.5 6.5L9 1"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                 </span>
-                <span className="text-xs font-medium text-emerald-700">Enabled</span>
+                <span className="text-xs font-medium text-emerald-700">
+                  Enabled
+                </span>
               </div>
             </div>
 
@@ -232,9 +248,7 @@ export function SkillsPreferencesPanel() {
                   <MessageSquare size={16} className="text-stone-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-stone-600">
-                    Telegram
-                  </p>
+                  <p className="text-sm font-medium text-stone-600">Telegram</p>
                   <p className="text-xs text-stone-400">
                     Receive alerts on Telegram
                   </p>
