@@ -59,10 +59,9 @@ export function JobsDashboard() {
   const [selectedPostedDate, setSelectedPostedDate] = useState<string | null>(
     null
   );
+  const [selectedMode, setSelectedMode] = useState<string | null>(null);
   const [selectedExperience, setSelectedExperience] = useState<string[]>([]);
   const [locationFilter, setLocationFilter] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
 
   const {
     data: jobs,
@@ -77,6 +76,7 @@ export function JobsDashboard() {
         role: selectedRole,
         postedAt: selectedPostedDate,
         experience: selectedExperience,
+        mode: selectedMode,
       },
     ],
     queryFn: () =>
@@ -88,8 +88,9 @@ export function JobsDashboard() {
           selectedExperience.length > 0
             ? selectedExperience.join(",")
             : undefined,
+        mode: selectedMode ?? undefined,
       }),
-    staleTime: 30_000,
+    staleTime: 30000,
   });
 
   const filteredJobs =
@@ -118,15 +119,12 @@ export function JobsDashboard() {
     selectedRole,
     selectedExperience.length > 0,
     locationFilter,
-    startDate || endDate,
   ].filter(Boolean).length;
 
   const clearFilters = () => {
     setSelectedRole(null);
     setSelectedExperience([]);
     setLocationFilter("");
-    setStartDate("");
-    setEndDate("");
   };
 
   if (isLoading) return <ArcLoader />;
@@ -243,14 +241,22 @@ export function JobsDashboard() {
               </label>
 
               <div className="flex flex-wrap gap-2 mt-3">
-                {["Remote", "Hybrid", "Onsite"].map((mode) => (
-                  <button
-                    key={mode}
-                    className="px-3 py-1.5 rounded-full border text-sm hover:bg-stone-50"
-                  >
-                    {mode}
-                  </button>
-                ))}
+                {["Remote", "Hybrid", "Onsite"].map((mode) => {
+                  const active = mode === selectedMode;
+                  return (
+                    <button
+                      key={mode}
+                      onClick={() => setSelectedMode(mode)}
+                      className={` ${
+                        active
+                          ? "bg-emerald-500 text-white border-emerald-500"
+                          : "hover:bg-stone-50"
+                      } px-3 py-1.5 rounded-full border text-sm hover:bg-stone-50`}
+                    >
+                      {mode}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 

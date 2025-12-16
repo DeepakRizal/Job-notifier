@@ -17,6 +17,12 @@ const EXPERIENCE_RANGES = {
   senior: { min: 6, max: 50 },
 };
 
+const MODE_KEYWORDS = {
+  remote: /remote/i,
+  onsite: /on[\s-]?site/i,
+  hybrid: /hybrid/i,
+};
+
 const NOTIFY_WINDOW_HOURS = Number(process.env.NOTIFY_WINDOW_HOURS || 24);
 const NOTIFY_WINDOW_MS = NOTIFY_WINDOW_HOURS * 60 * 60 * 1000;
 
@@ -241,6 +247,7 @@ export const getMyJobs = async (req, res, next) => {
 
   const q = (req.query.q || "").trim();
   const role = (req.query.role || "").trim() || null;
+  const mode = (req.query.mode || "").toLowerCase().trim() || null;
   const page = Math.max(1, parseInt(req.query.page, 10) || 1);
   const postedAt = (req.query.postedAt || "").trim() || null;
   const experienceParam = (req.query.experience || "").trim();
@@ -319,6 +326,12 @@ export const getMyJobs = async (req, res, next) => {
         $or: experienceConditions,
       });
     }
+  }
+
+  if (mode && MODE_KEYWORDS[mode]) {
+    andConditions.push({
+      location: MODE_KEYWORDS[mode],
+    });
   }
 
   const filter = andConditions.length ? { $and: andConditions } : {};
