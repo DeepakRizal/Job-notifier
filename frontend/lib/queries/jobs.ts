@@ -1,4 +1,4 @@
-import { JobDocument } from "@/types/job";
+import { JobDetailResponse, JobDocument } from "@/types/job";
 import { apiFetch } from "../api";
 
 type JobsResponse = { success: boolean; jobs: JobDocument[] };
@@ -62,4 +62,10 @@ export async function fetchMyJobs({
   const res = (await apiFetch(url)) as JobsResponse;
 
   return res.jobs;
+}
+
+export async function fetchAJob(jobId: string) {
+  const res = (await apiFetch(`/jobs/${jobId}`)) as JobDetailResponse;
+
+  return res.job;
 }

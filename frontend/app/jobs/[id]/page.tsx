@@ -1,13 +1,15 @@
 import { JobDetailPanel } from "../../components/feature/jobs/JobDetailPanel";
 
 interface JobPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default function JobPage(_props: JobPageProps) {
+export default async function JobPage({ params }: JobPageProps) {
+  const { id } = await params;
+
   return (
     <div className="ui-page-content">
-      <JobDetailPanel />
+      <JobDetailPanel jobId={id} />
     </div>
   );
 }

@@ -17,10 +17,37 @@ export interface JobDocument {
   maxExperience: number;
   minExperience: number;
   postedAt: string | null;
-  rawHTML: string;
   source: string;
   sourceId: string;
   tags: string[];
   title: string;
   updatedAt: string;
+}
+
+export interface JobDetail {
+  _id: string;
+  title: string;
+  company: string;
+  location: string;
+
+  description: string;
+
+  experience?: {
+    min: number;
+    max: number;
+  };
+
+  minExperience?: number;
+  maxExperience?: number;
+
+  tags: string[];
+
+  postedAt: string;
+  source?: string;
+  url: string;
+}
+
+export interface JobDetailResponse {
+  success: boolean;
+  job: JobDetail;
 }

@@ -401,3 +401,36 @@ export const getMyJobs = async (req, res, next) => {
     jobs: filteredJobs,
   });
 };
+
+export const getAjob = async (req, res, next) => {
+  const id = req.params.id;
+
+  const projection = {
+    title: 1,
+    company: 1,
+    location: 1,
+    description: 1,
+    experience: 1,
+    minExperience: 1,
+    maxExperience: 1,
+    tags: 1,
+    postedAt: 1,
+    url: 1,
+    source: 1,
+    _id: 1,
+  };
+
+  const job = await Job.findById(id, projection);
+
+  if (!job) {
+    return res.status(404).json({
+      status: false,
+      message: "Job doesn't exist",
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    job,
+  });
+};
