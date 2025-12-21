@@ -222,7 +222,15 @@ export const getAllJobs = async (req, res, next) => {
     // Prefer most recently posted jobs, falling back to newest discovered/created.
     const sort = { postedAt: -1, discoveredAt: -1, createdAt: -1 };
 
-    const jobs = await Job.find(filter)
+    const jobs = await Job.find(filter, {
+      title: 1,
+      company: 1,
+      location: 1,
+      postedAt: 1,
+      tags: 1,
+      url: 1,
+      _id: 1,
+    })
       .sort(sort)
       .skip((page - 1) * limit)
       .limit(limit)
@@ -339,7 +347,16 @@ export const getMyJobs = async (req, res, next) => {
   const sort = { postedAt: -1 };
 
   //query the jobs from the database
-  const jobs = await Job.find(filter)
+  const jobs = await Job.find(filter, {
+    title: 1,
+    company: 1,
+    location: 1,
+    postedAt: 1,
+    tags: 1,
+    url: 1,
+    experience: 1,
+    _id: 1,
+  })
     .sort(sort)
     .skip((page - 1) * limit)
     .limit(limit)

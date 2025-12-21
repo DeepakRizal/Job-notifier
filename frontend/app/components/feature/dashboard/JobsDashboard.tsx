@@ -55,47 +55,71 @@ export function JobsDashboard() {
   const debouncedQuery = useDebounce(searchQuery, 500);
 
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<JobRole | null>(null);
-  const [selectedPostedDate, setSelectedPostedDate] = useState<string | null>(
-    null
-  );
-  const [selectedMode, setSelectedMode] = useState<string | null>(null);
-  const [selectedExperience, setSelectedExperience] = useState<string[]>([]);
-  const [locationFilter, setLocationFilter] = useState("");
+
+  const [draftFilters, setDraftFilters] = useState({
+    role: null as JobRole | null,
+    postedAt: null as string | null,
+    experience: [] as string[],
+    mode: null as string | null,
+  });
+
+  const [appliedFilters, setAppliedFilters] = useState({
+    q: "",
+    role: null as JobRole | null,
+    postedAt: null as string | null,
+    experience: [] as string[],
+    mode: null as string | null,
+  });
+
+  const applyFilters = () => {
+    setAppliedFilters({
+      q: debouncedQuery,
+      role: draftFilters.role,
+      postedAt: draftFilters.postedAt,
+      experience: draftFilters.experience,
+      mode: draftFilters.mode,
+    });
+
+    setIsFilterModalOpen(false);
+  };
+
+  const clearFilters = () => {
+    const cleared = {
+      role: null,
+      postedAt: null,
+      experience: [],
+      mode: null,
+    };
+
+    setDraftFilters(cleared);
+    setAppliedFilters({
+      q: debouncedQuery,
+      ...cleared,
+    });
+  };
 
   const {
     data: jobs,
     isLoading,
     error,
   } = useQuery<JobDocument[], Error>({
-    // key is based on logical filters: search term, role, and postedAt range
-    queryKey: [
-      "jobs",
-      {
-        q: debouncedQuery,
-        role: selectedRole,
-        postedAt: selectedPostedDate,
-        experience: selectedExperience,
-        mode: selectedMode,
-      },
-    ],
+    queryKey: ["jobs", appliedFilters],
     queryFn: () =>
       fetchMyJobs({
-        q: debouncedQuery || undefined,
-        role: selectedRole ?? undefined,
-        postedAt: selectedPostedDate ?? undefined,
+        q: appliedFilters.q || undefined,
+        role: appliedFilters.role ?? undefined,
+        postedAt: appliedFilters.postedAt ?? undefined,
         experience:
-          selectedExperience.length > 0
-            ? selectedExperience.join(",")
+          appliedFilters.experience.length > 0
+            ? appliedFilters.experience.join(",")
             : undefined,
-        mode: selectedMode ?? undefined,
+        mode: appliedFilters.mode ?? undefined,
       }),
     staleTime: 30000,
   });
 
   const filteredJobs =
     jobs?.map((job) => {
-      // Use the real posting time when available so UI matches backend filters.
       const canonicalPostedAt =
         job.postedAt ?? job.discoveredAt ?? job.createdAt;
 
@@ -104,7 +128,6 @@ export function JobsDashboard() {
         title: job.title,
         company: job.company,
         location: job.location,
-        // Show how long ago the job was posted (or discovered as a fallback).
         postedAgo: timeSince(canonicalPostedAt),
         salaryRange:
           job?.experience?.min != null && job?.experience?.max != null
@@ -116,16 +139,11 @@ export function JobsDashboard() {
     }) ?? [];
 
   const activeFiltersCount = [
-    selectedRole,
-    selectedExperience.length > 0,
-    locationFilter,
+    appliedFilters.role,
+    appliedFilters.postedAt,
+    appliedFilters.mode,
+    appliedFilters.experience.length > 0,
   ].filter(Boolean).length;
-
-  const clearFilters = () => {
-    setSelectedRole(null);
-    setSelectedExperience([]);
-    setLocationFilter("");
-  };
 
   if (isLoading) return <ArcLoader />;
   if (error) return <div>Error loading jobs</div>;
@@ -140,18 +158,18 @@ export function JobsDashboard() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search jobs..."
-            className="w-full rounded-full border border-stone-300 bg-stone-50 pl-10 pr-4 py-2.5 text-stone-900 placeholder:text-stone-400 focus:border-stone-400 focus:ring-2 focus:ring-stone-200"
+            className="w-full rounded-full border border-stone-300 bg-stone-50 pl-10 pr-4 py-2.5 text-stone-900"
           />
         </div>
 
         <button
           onClick={() => setIsFilterModalOpen(true)}
-          className="flex shrink-0 items-center gap-2 rounded-full border border-stone-300 bg-stone-50 px-4 py-2 text-stone-700 hover:bg-stone-100 focus:ring-2 focus:ring-stone-200"
+          className="flex items-center gap-2 rounded-full border px-4 py-2"
         >
           <Filter size={16} />
           Filters
           {activeFiltersCount > 0 && (
-            <span className="rounded-full bg-stone-200 px-2 text-xs text-stone-700">
+            <span className="rounded-full bg-stone-200 px-2 text-xs">
               {activeFiltersCount}
             </span>
           )}
@@ -161,33 +179,30 @@ export function JobsDashboard() {
       <Dialog open={isFilterModalOpen} onOpenChange={setIsFilterModalOpen}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-lg font-semibold">
-              Advanced Filters
-            </DialogTitle>
+            <DialogTitle>Advanced Filters</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-6 py-4">
             {/* Posted Date */}
             <div>
-              <label className="font-medium flex gap-2 items-center">
-                <Calendar size={16} />
-                Posted Date
+              <label className="font-medium flex items-center gap-2">
+                <Calendar size={16} /> Posted Date
               </label>
-
-              <div className="flex flex-wrap gap-2 mt-3">
+              <div className="flex gap-2 mt-3 flex-wrap">
                 {["24h", "3 days", "7 days", "30 days"].map((range) => {
-                  const active = range === selectedPostedDate;
-
+                  const active = range === draftFilters.postedAt;
                   return (
                     <button
                       key={range}
-                      onClick={() => {
-                        setSelectedPostedDate(range);
-                        setIsFilterModalOpen(false);
-                      }}
-                      className={`px-3 py-1.5 rounded-full border text-sm hover:bg-stone-50  ${
+                      onClick={() =>
+                        setDraftFilters((p) => ({
+                          ...p,
+                          postedAt: range,
+                        }))
+                      }
+                      className={`px-3 py-1.5 rounded-full border text-sm ${
                         active
-                          ? "bg-emerald-500 text-white border-emerald-500"
+                          ? "bg-emerald-500 text-white"
                           : "hover:bg-stone-50"
                       }`}
                     >
@@ -200,31 +215,28 @@ export function JobsDashboard() {
 
             {/* Experience */}
             <div>
-              <label className="font-medium flex gap-2 items-center">
-                <Briefcase size={16} />
-                Experience
+              <label className="font-medium flex items-center gap-2">
+                <Briefcase size={16} /> Experience
               </label>
-
-              <div className="flex flex-wrap gap-2 mt-3">
+              <div className="flex gap-2 mt-3 flex-wrap">
                 {experienceLevels.map((lvl) => {
-                  const active = selectedExperience.includes(lvl.value);
-
+                  const active = draftFilters.experience.includes(lvl.value);
                   return (
                     <button
                       key={lvl.value}
-                      onClick={() => {
-                        setSelectedExperience(
-                          active
-                            ? selectedExperience.filter((v) => v !== lvl.value)
-                            : [...selectedExperience, lvl.value]
-                        );
-                      }}
-                      className={`px-3 py-1.5 rounded-full border text-sm transition
-                  ${
-                    active
-                      ? "bg-emerald-500 text-white border-emerald-500"
-                      : "hover:bg-stone-50"
-                  }`}
+                      onClick={() =>
+                        setDraftFilters((p) => ({
+                          ...p,
+                          experience: active
+                            ? p.experience.filter((v) => v !== lvl.value)
+                            : [...p.experience, lvl.value],
+                        }))
+                      }
+                      className={`px-3 py-1.5 rounded-full border text-sm ${
+                        active
+                          ? "bg-emerald-500 text-white"
+                          : "hover:bg-stone-50"
+                      }`}
                     >
                       {lvl.label}
                     </button>
@@ -235,23 +247,21 @@ export function JobsDashboard() {
 
             {/* Work Mode */}
             <div>
-              <label className="font-medium flex gap-2 items-center">
-                <MapPin size={16} />
-                Work Mode
+              <label className="font-medium flex items-center gap-2">
+                <MapPin size={16} /> Work Mode
               </label>
-
-              <div className="flex flex-wrap gap-2 mt-3">
+              <div className="flex gap-2 mt-3">
                 {["Remote", "Hybrid", "Onsite"].map((mode) => {
-                  const active = mode === selectedMode;
+                  const active = draftFilters.mode === mode;
                   return (
                     <button
                       key={mode}
-                      onClick={() => setSelectedMode(mode)}
-                      className={` ${
+                      onClick={() => setDraftFilters((p) => ({ ...p, mode }))}
+                      className={`px-3 py-1.5 rounded-full border text-sm ${
                         active
-                          ? "bg-emerald-500 text-white border-emerald-500"
+                          ? "bg-emerald-500 text-white"
                           : "hover:bg-stone-50"
-                      } px-3 py-1.5 rounded-full border text-sm hover:bg-stone-50`}
+                      }`}
                     >
                       {mode}
                     </button>
@@ -260,42 +270,28 @@ export function JobsDashboard() {
               </div>
             </div>
 
-            {/* Location */}
-            <div>
-              <label className="font-medium flex gap-2 items-center">
-                <MapPin size={16} />
-                Location
-              </label>
-
-              <input
-                value={locationFilter}
-                onChange={(e) => setLocationFilter(e.target.value)}
-                className="w-full mt-3 border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                placeholder="India, Remote, Bangalore..."
-              />
-            </div>
-
             {/* Job Role */}
             <div>
-              <label className="font-medium flex gap-2 items-center">
-                <Filter size={16} />
-                Job Role
+              <label className="font-medium flex items-center gap-2">
+                <Filter size={16} /> Job Role
               </label>
-
-              <div className="flex flex-wrap gap-2 mt-3">
+              <div className="flex gap-2 mt-3 flex-wrap">
                 {roleFilters.map((role) => {
-                  const active = selectedRole === role;
-
+                  const active = draftFilters.role === role;
                   return (
                     <button
                       key={role}
-                      onClick={() => setSelectedRole(active ? null : role)}
-                      className={`px-3 py-1.5 rounded-full border text-sm transition
-                  ${
-                    active
-                      ? "bg-emerald-500 text-white border-emerald-500"
-                      : "hover:bg-stone-50"
-                  }`}
+                      onClick={() =>
+                        setDraftFilters((p) => ({
+                          ...p,
+                          role: active ? null : role,
+                        }))
+                      }
+                      className={`px-3 py-1.5 rounded-full border text-sm ${
+                        active
+                          ? "bg-emerald-500 text-white"
+                          : "hover:bg-stone-50"
+                      }`}
                     >
                       {role}
                     </button>
@@ -308,14 +304,14 @@ export function JobsDashboard() {
           <DialogFooter className="flex justify-between">
             <button
               onClick={clearFilters}
-              className="px-4 py-2 rounded-md border text-sm hover:bg-stone-50"
+              className="px-4 py-2 rounded-md border text-sm"
             >
               Clear All
             </button>
 
             <button
-              onClick={() => setIsFilterModalOpen(false)}
-              className="px-4 py-2 rounded-md bg-emerald-500 text-white text-sm hover:bg-emerald-600"
+              onClick={applyFilters}
+              className="px-4 py-2 rounded-md bg-emerald-500 text-white text-sm"
             >
               Apply Filters
             </button>
