@@ -254,6 +254,8 @@ export const getMyJobs = async (req, res, next) => {
   const { skills } = req.user;
 
   const q = (req.query.q || "").trim();
+
+  console.log(q);
   const role = (req.query.role || "").trim() || null;
   const mode = (req.query.mode || "").toLowerCase().trim() || null;
   const page = Math.max(1, parseInt(req.query.page, 10) || 1);
@@ -343,6 +345,8 @@ export const getMyJobs = async (req, res, next) => {
   }
 
   const filter = andConditions.length ? { $and: andConditions } : {};
+
+  console.log(andConditions);
 
   const sort = { postedAt: -1 };
 

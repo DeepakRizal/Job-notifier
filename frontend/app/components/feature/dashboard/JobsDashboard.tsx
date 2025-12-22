@@ -64,7 +64,6 @@ export function JobsDashboard() {
   });
 
   const [appliedFilters, setAppliedFilters] = useState({
-    q: "",
     role: null as JobRole | null,
     postedAt: null as string | null,
     experience: [] as string[],
@@ -73,7 +72,6 @@ export function JobsDashboard() {
 
   const applyFilters = () => {
     setAppliedFilters({
-      q: debouncedQuery,
       role: draftFilters.role,
       postedAt: draftFilters.postedAt,
       experience: draftFilters.experience,
@@ -93,7 +91,6 @@ export function JobsDashboard() {
 
     setDraftFilters(cleared);
     setAppliedFilters({
-      q: debouncedQuery,
       ...cleared,
     });
   };
@@ -103,10 +100,10 @@ export function JobsDashboard() {
     isLoading,
     error,
   } = useQuery<JobDocument[], Error>({
-    queryKey: ["jobs", appliedFilters],
+    queryKey: ["jobs", appliedFilters, debouncedQuery],
     queryFn: () =>
       fetchMyJobs({
-        q: appliedFilters.q || undefined,
+        q: debouncedQuery || undefined,
         role: appliedFilters.role ?? undefined,
         postedAt: appliedFilters.postedAt ?? undefined,
         experience:

@@ -49,6 +49,8 @@ export async function fetchMyJobs({
   const params = new URLSearchParams();
   // q -> backend expects `q`
   if (q) params.set("q", q);
+
+  console.log(q);
   if (role) params.set("role", role);
   if (postedAt) params.set("postedAt", postedAt);
   if (experience) params.set("experience", experience);
