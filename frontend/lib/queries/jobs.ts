@@ -1,4 +1,4 @@
-import { JobDocument } from "@/types/job";
+import { JobDetailResponse, JobDocument } from "@/types/job";
 import { apiFetch } from "../api";
 
 type JobsResponse = { success: boolean; jobs: JobDocument[] };
@@ -36,6 +36,7 @@ export async function fetchMyJobs({
   postedAt,
   limit = 20,
   experience,
+  mode,
 }: {
   q?: string;
   role?: string | null;
@@ -43,13 +44,17 @@ export async function fetchMyJobs({
   page?: number;
   limit?: number;
   experience?: string | undefined;
+  mode?: string | undefined;
 }) {
   const params = new URLSearchParams();
   // q -> backend expects `q`
   if (q) params.set("q", q);
+
+  console.log(q);
   if (role) params.set("role", role);
   if (postedAt) params.set("postedAt", postedAt);
   if (experience) params.set("experience", experience);
+  if (mode) params.set("mode", mode);
 
   params.set("page", String(page));
   params.set("limit", String(limit));
@@ -59,4 +64,10 @@ export async function fetchMyJobs({
   const res = (await apiFetch(url)) as JobsResponse;
 
   return res.jobs;
+}
+
+export async function fetchAJob(jobId: string) {
+  const res = (await apiFetch(`/jobs/${jobId}`)) as JobDetailResponse;
+
+  return res.job;
 }

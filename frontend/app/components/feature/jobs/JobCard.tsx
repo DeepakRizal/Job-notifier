@@ -4,6 +4,7 @@ import { Bookmark, Building2, Clock, ExternalLink, MapPin } from "lucide-react";
 import { useState } from "react";
 
 interface JobCardProps {
+  id: string;
   title: string;
   company: string;
   location: string;
@@ -14,6 +15,7 @@ interface JobCardProps {
 }
 
 export function JobCard({
+  id,
   title,
   company,
   location,
@@ -112,7 +114,7 @@ export function JobCard({
 
         <div className="flex items-center gap-3 pt-4 border-t border-stone-100">
           <a
-            href={url}
+            href={`/jobs/${id}`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-stone-700 bg-white border border-stone-200 hover:border-stone-300 hover:bg-stone-50 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-stone-500/20"

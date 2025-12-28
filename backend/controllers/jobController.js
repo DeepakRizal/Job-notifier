@@ -17,6 +17,12 @@ const EXPERIENCE_RANGES = {
   senior: { min: 6, max: 50 },
 };
 
+const MODE_KEYWORDS = {
+  remote: /remote/i,
+  onsite: /on[\s-]?site/i,
+  hybrid: /hybrid/i,
+};
+
 const NOTIFY_WINDOW_HOURS = Number(process.env.NOTIFY_WINDOW_HOURS || 24);
 const NOTIFY_WINDOW_MS = NOTIFY_WINDOW_HOURS * 60 * 60 * 1000;
 
@@ -216,7 +222,15 @@ export const getAllJobs = async (req, res, next) => {
     // Prefer most recently posted jobs, falling back to newest discovered/created.
     const sort = { postedAt: -1, discoveredAt: -1, createdAt: -1 };
 
-    const jobs = await Job.find(filter)
+    const jobs = await Job.find(filter, {
+      title: 1,
+      company: 1,
+      location: 1,
+      postedAt: 1,
+      tags: 1,
+      url: 1,
+      _id: 1,
+    })
       .sort(sort)
       .skip((page - 1) * limit)
       .limit(limit)
@@ -240,7 +254,10 @@ export const getMyJobs = async (req, res, next) => {
   const { skills } = req.user;
 
   const q = (req.query.q || "").trim();
+
+  console.log(q);
   const role = (req.query.role || "").trim() || null;
+  const mode = (req.query.mode || "").toLowerCase().trim() || null;
   const page = Math.max(1, parseInt(req.query.page, 10) || 1);
   const postedAt = (req.query.postedAt || "").trim() || null;
   const experienceParam = (req.query.experience || "").trim();
@@ -321,12 +338,29 @@ export const getMyJobs = async (req, res, next) => {
     }
   }
 
+  if (mode && MODE_KEYWORDS[mode]) {
+    andConditions.push({
+      location: MODE_KEYWORDS[mode],
+    });
+  }
+
   const filter = andConditions.length ? { $and: andConditions } : {};
+
+  console.log(andConditions);
 
   const sort = { postedAt: -1 };
 
   //query the jobs from the database
-  const jobs = await Job.find(filter)
+  const jobs = await Job.find(filter, {
+    title: 1,
+    company: 1,
+    location: 1,
+    postedAt: 1,
+    tags: 1,
+    url: 1,
+    experience: 1,
+    _id: 1,
+  })
     .sort(sort)
     .skip((page - 1) * limit)
     .limit(limit)
@@ -369,5 +403,38 @@ export const getMyJobs = async (req, res, next) => {
   res.status(200).json({
     success: true,
     jobs: filteredJobs,
+  });
+};
+
+export const getAjob = async (req, res, next) => {
+  const id = req.params.id;
+
+  const projection = {
+    title: 1,
+    company: 1,
+    location: 1,
+    description: 1,
+    experience: 1,
+    minExperience: 1,
+    maxExperience: 1,
+    tags: 1,
+    postedAt: 1,
+    url: 1,
+    source: 1,
+    _id: 1,
+  };
+
+  const job = await Job.findById(id, projection);
+
+  if (!job) {
+    return res.status(404).json({
+      status: false,
+      message: "Job doesn't exist",
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    job,
   });
 };
