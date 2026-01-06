@@ -1,10 +1,10 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Filter, Search } from "lucide-react";
 import { fetchMyJobs } from "@/lib/queries/jobs";
-import type { JobDocument } from "@/types/job";
+
 import ArcLoader from "../../layout/ArcLoader";
 import { useDebounce } from "@/app/hooks/useDebounce";
 import { JobCard } from "../jobs/JobCard";
@@ -35,13 +35,18 @@ export function JobsDashboard() {
   const debouncedQuery = useDebounce(searchQuery, DEBOUNCE_DELAY);
 
   const {
-    data: jobs,
+    data,
     isLoading,
     error,
-  } = useQuery<JobDocument[], Error>({
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
     queryKey: ["jobs", appliedFilters, debouncedQuery],
-    queryFn: () =>
+    initialPageParam: 1,
+    queryFn: ({ pageParam = 1 }) =>
       fetchMyJobs({
+        page: pageParam,
         q: debouncedQuery || undefined,
         role: appliedFilters.role ?? undefined,
         postedAt: appliedFilters.postedAt ?? undefined,
@@ -51,12 +56,18 @@ export function JobsDashboard() {
             : undefined,
         mode: appliedFilters.mode ?? undefined,
       }),
+    getNextPageParam: (lastPage, pages) => {
+      return lastPage.hasMore ? pages.length + 1 : undefined;
+    },
     staleTime: QUERY_STALE_TIME,
   });
 
+  console.log(data);
+
   const transformedJobs = useMemo<TransformedJob[]>(() => {
-    return jobs?.map(transformJob) ?? [];
-  }, [jobs]);
+    const pages = data?.pages ?? [];
+    return pages.flatMap((page) => page.jobs.map(transformJob));
+  }, [data]);
 
   if (isLoading) return <ArcLoader />;
 

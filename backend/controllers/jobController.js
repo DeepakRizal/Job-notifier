@@ -250,160 +250,143 @@ export const getAllJobs = async (req, res, next) => {
 };
 
 export const getMyJobs = async (req, res, next) => {
-  //read the skills
-  const { skills } = req.user;
+  try {
+    const { skills = [] } = req.user;
 
-  const q = (req.query.q || "").trim();
+    const q = (req.query.q || "").trim();
+    const role = (req.query.role || "").trim() || null;
+    const mode = (req.query.mode || "").toLowerCase().trim() || null;
+    const postedAt = (req.query.postedAt || "").trim() || null;
+    const experienceParam = (req.query.experience || "").trim();
 
-  console.log(q);
-  const role = (req.query.role || "").trim() || null;
-  const mode = (req.query.mode || "").toLowerCase().trim() || null;
-  const page = Math.max(1, parseInt(req.query.page, 10) || 1);
-  const postedAt = (req.query.postedAt || "").trim() || null;
-  const experienceParam = (req.query.experience || "").trim();
-  const limit = Math.max(100, parseInt(req.query.limit, 10) || 20);
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
 
-  const escapeForRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const limit = Math.min(
+      100,
+      Math.max(1, parseInt(req.query.limit, 10) || 20)
+    );
 
-  const andConditions = [];
+    const escapeForRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-  if (q) {
-    const qRegex = new RegExp(escapeForRegex(q), "i");
-    const qCondition = {
-      $or: [
-        {
-          title: qRegex,
-        },
-        {
-          tags: { $in: [qRegex] },
-        },
-        {
-          company: qRegex,
-        },
-        {
-          location: qRegex,
-        },
-        {
-          description: qRegex,
-        },
-      ],
-    };
+    const andConditions = [];
 
-    andConditions.push(qCondition);
-  }
-
-  if (role) {
-    const roleRegex = new RegExp(escapeForRegex(role), "i");
-
-    const roleCondition = {
-      $or: [
-        { role: role },
-        { tags: { $in: [roleRegex] } },
-        { title: roleRegex },
-        { description: roleRegex },
-      ],
-    };
-
-    andConditions.push(roleCondition);
-  }
-
-  if (postedAt && POSTED_AT_RANGES[postedAt]) {
-    const days = POSTED_AT_RANGES[postedAt];
-
-    const cutOffDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
-
-    andConditions.push({
-      postedAt: { $gte: cutOffDate },
-    });
-  }
-
-  if (experienceParam) {
-    const experienceLevels = experienceParam
-      .split(",")
-      .map((e) => e.trim())
-      .filter(Boolean);
-
-    const experienceConditions = experienceLevels
-      .map((level) => EXPERIENCE_RANGES[level])
-      .filter(Boolean)
-      .map((range) => ({
-        minExperience: { $lte: range.max },
-        maxExperience: { $gte: range.min },
-      }));
-
-    if (experienceConditions.length > 0) {
+    // Search query
+    if (q) {
+      const qRegex = new RegExp(escapeForRegex(q), "i");
       andConditions.push({
-        $or: experienceConditions,
+        $or: [
+          { title: qRegex },
+          { company: qRegex },
+          { location: qRegex },
+          { description: qRegex },
+          { tags: { $in: [qRegex] } },
+        ],
       });
     }
-  }
 
-  if (mode && MODE_KEYWORDS[mode]) {
-    andConditions.push({
-      location: MODE_KEYWORDS[mode],
-    });
-  }
+    // Role filter
+    if (role) {
+      const roleRegex = new RegExp(escapeForRegex(role), "i");
+      andConditions.push({
+        $or: [
+          { role },
+          { title: roleRegex },
+          { description: roleRegex },
+          { tags: { $in: [roleRegex] } },
+        ],
+      });
+    }
 
-  const filter = andConditions.length ? { $and: andConditions } : {};
+    // Posted at filter
+    if (postedAt && POSTED_AT_RANGES[postedAt]) {
+      const days = POSTED_AT_RANGES[postedAt];
+      const cutOffDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
-  console.log(andConditions);
+      andConditions.push({ postedAt: { $gte: cutOffDate } });
+    }
 
-  const sort = { postedAt: -1 };
+    // Experience filter
+    if (experienceParam) {
+      const experienceLevels = experienceParam
+        .split(",")
+        .map((e) => e.trim())
+        .filter(Boolean);
 
-  //query the jobs from the database
-  const jobs = await Job.find(filter, {
-    title: 1,
-    company: 1,
-    location: 1,
-    postedAt: 1,
-    tags: 1,
-    url: 1,
-    experience: 1,
-    _id: 1,
-  })
-    .sort(sort)
-    .skip((page - 1) * limit)
-    .limit(limit)
-    .lean()
-    .exec();
+      const experienceConditions = experienceLevels
+        .map((level) => EXPERIENCE_RANGES[level])
+        .filter(Boolean)
+        .map((range) => ({
+          minExperience: { $lte: range.max },
+          maxExperience: { $gte: range.min },
+        }));
 
-  // filter the jobs that matches the user skills
-  const filteredJobs = jobs.filter((job) => {
-    // Build combined job text for searching
-    const jobTextRaw = `${job.title || ""} ${job.description || ""} ${
-      job.company || ""
-    } ${Array.isArray(job.tags) ? job.tags.join(" ") : ""}`.toLowerCase();
+      if (experienceConditions.length > 0) {
+        andConditions.push({ $or: experienceConditions });
+      }
+    }
 
-    // Normalize user skills
+    // Mode filter
+    if (mode && MODE_KEYWORDS[mode]) {
+      andConditions.push({
+        location: MODE_KEYWORDS[mode],
+      });
+    }
+
+    const filter = andConditions.length ? { $and: andConditions } : {};
+    const sort = { postedAt: -1 };
+
+    // Fetch jobs from DB
+    const jobs = await Job.find(filter, {
+      title: 1,
+      company: 1,
+      location: 1,
+      postedAt: 1,
+      tags: 1,
+      url: 1,
+      experience: 1,
+      _id: 1,
+      description: 1,
+    })
+      .sort(sort)
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean()
+      .exec();
+
+    // Skill-based filtering
     const normalizedSkills = skills
       .map((s) => String(s).toLowerCase().trim())
       .filter(Boolean);
 
-    // Check if any skill matches (flexible matching)
-    return normalizedSkills.some((skill) => {
-      // Direct substring match (handles "react" in "reactjs", "node" in "nodejs")
-      if (jobTextRaw.includes(skill)) return true;
+    const filteredJobs = jobs.filter((job) => {
+      const jobText = `${job.title || ""} ${job.description || ""} ${
+        job.company || ""
+      } ${Array.isArray(job.tags) ? job.tags.join(" ") : ""}`.toLowerCase();
 
-      // Also check job tags specifically with bidirectional matching
-      if (Array.isArray(job.tags)) {
-        for (const tag of job.tags) {
-          const normalizedTag = String(tag).toLowerCase().trim();
-          // skill in tag OR tag in skill
-          if (normalizedTag.includes(skill) || skill.includes(normalizedTag)) {
-            return true;
-          }
+      return normalizedSkills.some((skill) => {
+        if (jobText.includes(skill)) return true;
+
+        if (Array.isArray(job.tags)) {
+          return job.tags.some((tag) => {
+            const normalizedTag = String(tag).toLowerCase().trim();
+            return (
+              normalizedTag.includes(skill) || skill.includes(normalizedTag)
+            );
+          });
         }
-      }
 
-      return false;
+        return false;
+      });
     });
-  });
 
-  // return those jobs to the logged in user
-  res.status(200).json({
-    success: true,
-    jobs: filteredJobs,
-  });
+    res.status(200).json({
+      success: true,
+      jobs: filteredJobs,
+      hasMore: filteredJobs.length === limit,
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 export const getAjob = async (req, res, next) => {

@@ -1,7 +1,7 @@
 import { JobDetailResponse, JobDocument } from "@/types/job";
 import { apiFetch } from "../api";
 
-type JobsResponse = { success: boolean; jobs: JobDocument[] };
+type JobsResponse = { success: boolean; jobs: JobDocument[]; hasMore: boolean };
 
 export async function fetchJobs({
   q,
@@ -30,27 +30,26 @@ export async function fetchJobs({
 }
 
 export async function fetchMyJobs({
+  page = 1,
   q,
   role,
-  page = 1,
   postedAt,
   limit = 20,
   experience,
   mode,
 }: {
+  page?: number;
   q?: string;
   role?: string | null;
   postedAt?: string | undefined;
-  page?: number;
   limit?: number;
   experience?: string | undefined;
   mode?: string | undefined;
 }) {
   const params = new URLSearchParams();
-  // q -> backend expects `q`
+
   if (q) params.set("q", q);
 
-  console.log(q);
   if (role) params.set("role", role);
   if (postedAt) params.set("postedAt", postedAt);
   if (experience) params.set("experience", experience);
@@ -63,7 +62,7 @@ export async function fetchMyJobs({
 
   const res = (await apiFetch(url)) as JobsResponse;
 
-  return res.jobs;
+  return { jobs: res.jobs, hasMore: res.hasMore };
 }
 
 export async function fetchAJob(jobId: string) {
