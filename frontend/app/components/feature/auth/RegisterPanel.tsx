@@ -51,7 +51,7 @@ export function RegisterPanel() {
   };
 
   return (
-    <section className="ui-card ui-card-hover mx-auto max-w-md p-5 md:p-6 motion-safe:animate-[fadeIn_320ms_ease-out]">
+    <section className="ui-card mx-auto max-w-md p-5 md:p-6 motion-safe:animate-[fadeIn_320ms_ease-out]">
       <div className="space-y-1.5 mb-4">
         <h2 className="text-xl font-semibold tracking-tight text-text-title">
           Create your account
