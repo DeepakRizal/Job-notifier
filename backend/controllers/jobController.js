@@ -3,6 +3,7 @@ import Job from "../models/Job.js";
 import User from "../models/User.js";
 import Match from "../models/Match.js";
 import { sendEmail } from "../utils/email.js";
+import crypto from "crypto";
 
 const POSTED_AT_RANGES = {
   "24h": 1,
@@ -70,15 +71,25 @@ export const discoverJob = async (req, res, next) => {
     doc.minExperience = doc.experience ? doc.experience.min : null;
     doc.maxExperience = doc.experience ? doc.experience.max : null;
 
-    // Handle owner(s) - can be a single owner ID or array of owner IDs
+    let fingerprint = body.fingerprint;
+    if (!fingerprint) {
+      const seed = (url || `${doc.title || ""}|${doc.company || ""}`).toString();
+      fingerprint = crypto
+        .createHash("sha256")
+        .update(seed)
+        .digest("hex");
+    }
+    doc.fingerprint = fingerprint;
+
     const ownerIds = body.owner || body.owners || [];
     const ownersArray = Array.isArray(ownerIds) ? ownerIds : [ownerIds];
     const validOwners = ownersArray.filter(
       (id) => id && typeof id === "string"
     );
 
-    // upsert by url if available, otherwise by sourceId, otherwise insert new
-    const query = url
+    const query = fingerprint
+      ? { fingerprint }
+      : url
       ? { url }
       : sourceId
       ? { source: doc.source, sourceId }
@@ -335,7 +346,6 @@ export const getMyJobs = async (req, res, next) => {
     const filter = andConditions.length ? { $and: andConditions } : {};
     const sort = { postedAt: -1 };
 
-    // Fetch jobs from DB
     const jobs = await Job.find(filter, {
       title: 1,
       company: 1,
@@ -349,9 +359,11 @@ export const getMyJobs = async (req, res, next) => {
     })
       .sort(sort)
       .skip((page - 1) * limit)
-      .limit(limit)
+      .limit(limit + 1)
       .lean()
       .exec();
+
+    const hasMorePages = jobs.length > limit;
 
     // Skill-based filtering
     const normalizedSkills = skills
@@ -379,10 +391,14 @@ export const getMyJobs = async (req, res, next) => {
       });
     });
 
+    const jobsToReturn = hasMorePages
+      ? filteredJobs.slice(0, limit)
+      : filteredJobs;
+
     res.status(200).json({
       success: true,
-      jobs: filteredJobs,
-      hasMore: filteredJobs.length === limit,
+      jobs: jobsToReturn,
+      hasMore: hasMorePages,
     });
   } catch (error) {
     next(error);

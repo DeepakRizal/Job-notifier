@@ -4,6 +4,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Filter, Search } from "lucide-react";
 import { fetchMyJobs } from "@/lib/queries/jobs";
+import { useInfiniteScroll } from "@/app/hooks/useInfiniteScroll";
 
 import ArcLoader from "../../layout/ArcLoader";
 import { useDebounce } from "@/app/hooks/useDebounce";
@@ -62,11 +63,24 @@ export function JobsDashboard() {
     staleTime: QUERY_STALE_TIME,
   });
 
-  console.log(data);
+  const endOfListRef = useInfiniteScroll({
+    hasNextPage,
+    isFetchingNextPage,
+    onReachEnd: fetchNextPage,
+  });
 
   const transformedJobs = useMemo<TransformedJob[]>(() => {
     const pages = data?.pages ?? [];
-    return pages.flatMap((page) => page.jobs.map(transformJob));
+    const allJobs = pages.flatMap((page) => page.jobs.map(transformJob));
+
+    const uniqueJobsMap = new Map<string, TransformedJob>();
+    for (const job of allJobs) {
+      if (!uniqueJobsMap.has(job.id)) {
+        uniqueJobsMap.set(job.id, job);
+      }
+    }
+
+    return Array.from(uniqueJobsMap.values());
   }, [data]);
 
   if (isLoading) return <ArcLoader />;
@@ -138,11 +152,15 @@ export function JobsDashboard() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {transformedJobs.map((job) => (
-            <JobCard key={job.id} {...job} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {transformedJobs.map((job) => (
+              <JobCard key={job.id} {...job} />
+            ))}
+          </div>
+
+          <div ref={endOfListRef} className="h-px" />
+        </>
       )}
     </div>
   );
