@@ -54,7 +54,7 @@ export function LoginPanel() {
   };
 
   return (
-    <section className="ui-card ui-card-hover mx-auto max-w-md p-6 md:p-8 motion-safe:animate-[fadeIn_320ms_ease-out]">
+    <section className="ui-card mx-auto max-w-md p-6 md:p-8 motion-safe:animate-[fadeIn_320ms_ease-out]">
       <div className="space-y-2 mb-6">
         <h2 className="text-xl font-semibold tracking-tight text-text-title">
           Sign in to your dashboard
