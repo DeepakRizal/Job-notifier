@@ -28,6 +28,7 @@ import { useForm } from "react-hook-form";
 import { isApiError } from "@/lib/errors";
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
+import { ConfirmDialog } from "../../layout/ConfirmDialog";
 
 interface Input {
   query: string;
@@ -71,7 +72,7 @@ export function SearchQueriesPanel() {
     editingId: null,
     editingValue: "",
   });
-  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [queryToDelete, setQueryToDelete] = useState<Query | null>(null);
 
   const queryClient = useQueryClient();
   const {
@@ -110,7 +111,7 @@ export function SearchQueriesPanel() {
       queryClient.invalidateQueries({
         queryKey: ["queries"],
       });
-      setDeleteConfirmId(null);
+      setQueryToDelete(null);
     },
   });
 
@@ -147,12 +148,9 @@ export function SearchQueriesPanel() {
     }
   }
 
-  const handleDelete = (id: string) => {
-    if (deleteConfirmId === id) {
-      deleteQueryMutation.mutate(id);
-    } else {
-      setDeleteConfirmId(id);
-      setTimeout(() => setDeleteConfirmId(null), 3000);
+  const handleDeleteConfirm = () => {
+    if (queryToDelete) {
+      deleteQueryMutation.mutate(queryToDelete._id);
     }
   };
 
@@ -455,25 +453,13 @@ export function SearchQueriesPanel() {
                       </button>
 
                       <button
-                        onClick={() => handleDelete(query._id)}
+                        onClick={() => setQueryToDelete(query)}
                         disabled={editing.editingId === query._id}
-                        className={`flex h-9 w-9 items-center justify-center rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
-                          deleteConfirmId === query._id
-                            ? "bg-red-600 text-white hover:bg-red-700"
-                            : "text-red-600 hover:bg-red-50 hover:text-red-700"
-                        }`}
-                        title={
-                          deleteConfirmId === query._id
-                            ? "Click again to confirm"
-                            : "Delete query"
-                        }
+                        className="flex h-9 w-9 items-center justify-center rounded-lg text-red-600 transition-all hover:bg-red-50 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        title="Delete query"
                         aria-label="Delete query"
                       >
-                        {deleteConfirmId === query._id ? (
-                          <Check size={16} />
-                        ) : (
-                          <Trash2 size={16} />
-                        )}
+                        <Trash2 size={16} />
                       </button>
                     </>
                   )}
@@ -483,6 +469,25 @@ export function SearchQueriesPanel() {
           ))}
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmDialog
+        open={!!queryToDelete}
+        onOpenChange={(open) => !open && setQueryToDelete(null)}
+        title="Delete Query"
+        description="Are you sure you want to delete this query? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+        onConfirm={handleDeleteConfirm}
+        isLoading={deleteQueryMutation.isPending}
+      >
+        {queryToDelete && (
+          <p className="text-sm font-medium text-stone-900">
+            {queryToDelete.query}
+          </p>
+        )}
+      </ConfirmDialog>
     </div>
   );
 }
