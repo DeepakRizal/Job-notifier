@@ -5,13 +5,12 @@ import { useMemo, useState } from "react";
 import { Filter, Search } from "lucide-react";
 import { fetchMyJobs } from "@/lib/queries/jobs";
 import { useInfiniteScroll } from "@/app/hooks/useInfiniteScroll";
-
-import ArcLoader from "../../layout/ArcLoader";
 import { useDebounce } from "@/app/hooks/useDebounce";
 import { JobCard } from "../jobs/JobCard";
 import { transformJob, type TransformedJob } from "./jobUtils";
 import { JobFiltersModal } from "./JobFiltersModal";
 import { useJobFilters } from "./useJobFilters";
+import { JobCardSkeleton } from "../jobs/JobCardSkeleton";
 
 const QUERY_STALE_TIME = 30_000;
 const DEBOUNCE_DELAY = 500;
@@ -83,7 +82,7 @@ export function JobsDashboard() {
     return Array.from(uniqueJobsMap.values());
   }, [data]);
 
-  if (isLoading) return <ArcLoader />;
+  if (isLoading) return <JobCardSkeleton count={6} />;
 
   if (error) {
     return (
