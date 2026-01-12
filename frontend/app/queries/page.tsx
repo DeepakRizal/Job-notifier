@@ -2,7 +2,7 @@ import { SearchQueriesPanel } from "../components/feature/dashboard/SearchQuerie
 
 export default function QueriesPage() {
   return (
-    <div className="ui-page-content pt-4 md:pt-6">
+    <div className="min-h-screen bg-stone-50/50 py-8 md:py-12">
       <SearchQueriesPanel />
     </div>
   );

@@ -19,12 +19,17 @@ import {
   Clock,
   Check,
   X,
+  AlertCircle,
+  RefreshCw,
+  Sparkles,
 } from "lucide-react";
 
 import { useForm } from "react-hook-form";
 import { isApiError } from "@/lib/errors";
 import { useState } from "react";
-import ArcLoader from "../../layout/ArcLoader";
+import { formatDistanceToNow } from "date-fns";
+import { ConfirmDialog } from "../../layout/ConfirmDialog";
+import QuerySkeleton from "../query/QuerySkeleton";
 
 interface Input {
   query: string;
@@ -40,6 +45,7 @@ export function SearchQueriesPanel() {
     editingId: null,
     editingValue: "",
   });
+  const [queryToDelete, setQueryToDelete] = useState<Query | null>(null);
 
   const queryClient = useQueryClient();
   const {
@@ -54,6 +60,8 @@ export function SearchQueriesPanel() {
     data: queries = [],
     isLoading,
     error,
+    refetch,
+    isRefetching,
   } = useQuery<Query[], Error>({
     queryKey: ["queries"],
     queryFn: getMyQueries,
@@ -72,18 +80,17 @@ export function SearchQueriesPanel() {
 
   const deleteQueryMutation = useMutation({
     mutationFn: (id: string) => deleteQuery(id),
-
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["queries"],
       });
+      setQueryToDelete(null);
     },
   });
 
   const toggleQueryMutation = useMutation({
     mutationFn: ({ id, active }: { id: string; active: boolean }) =>
       toggleQueryActive(id, active),
-
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["queries"] });
     },
@@ -96,47 +103,67 @@ export function SearchQueriesPanel() {
       queryClient.invalidateQueries({
         queryKey: ["queries"],
       });
+      setEditing({
+        editingId: null,
+        editingValue: "",
+      });
     },
   });
-
-  if (isLoading) {
-    return <ArcLoader />;
-  }
-
-  if (error) {
-    return (
-      <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center">
-        <p className="text-sm font-medium text-red-900">
-          Failed to load queries
-        </p>
-        <p className="mt-1 text-xs text-red-700">Please try again later</p>
-      </div>
-    );
-  }
 
   async function onSubmit(data: Input) {
     try {
       await createQueryMutation.mutateAsync(data.query);
     } catch (error: unknown) {
       if (isApiError(error)) {
-        console.log(error);
         const msg = error.message || "Failed to create query";
-
         setError("root", { type: "server", message: msg });
       }
     }
   }
 
+  const handleDeleteConfirm = () => {
+    if (queryToDelete) {
+      deleteQueryMutation.mutate(queryToDelete._id);
+    }
+  };
+
+  const activeQueriesCount = queries.filter((q) => q.active).length;
+
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-6">
+    <div className="mx-auto max-w-4xl space-y-8 px-4 sm:px-6 lg:px-8">
+      {/* Page Header */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-stone-900">
+              Search Queries
+            </h1>
+            <p className="mt-2 text-sm text-stone-600">
+              Manage your job search queries. Active queries are automatically
+              scraped for new job postings.
+            </p>
+          </div>
+          {queries.length > 0 && !isLoading && (
+            <div className="hidden items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700 sm:flex">
+              <Sparkles size={16} />
+              <span>
+                {activeQueriesCount}{" "}
+                {activeQueriesCount === 1 ? "query" : "queries"} active
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Add Query Form */}
-      <div className="rounded-2xl border border-border/50 bg-card p-6 shadow-sm">
+      <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="flex flex-col gap-3 sm:flex-row">
             <div className="relative flex-1">
               <Search
                 size={18}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400"
+                aria-hidden="true"
               />
               <input
                 type="text"
@@ -144,10 +171,12 @@ export function SearchQueriesPanel() {
                   required: "Query is required!",
                 })}
                 placeholder="e.g., Senior React Developer in San Francisco"
-                className="h-12 w-full rounded-xl border border-border bg-background pl-11 pr-4 text-sm outline-none ring-offset-background transition-all placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className="h-12 w-full rounded-xl border border-stone-300 bg-stone-50 pl-11 pr-4 text-sm text-stone-900 placeholder:text-stone-400 outline-none transition-all focus:border-emerald-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+                aria-label="Search query"
               />
               {errors.query && (
-                <p className="mt-2 text-xs text-destructive">
+                <p className="mt-2 text-xs text-red-600 flex items-center gap-1">
+                  <AlertCircle size={12} />
                   {errors.query.message}
                 </p>
               )}
@@ -156,41 +185,84 @@ export function SearchQueriesPanel() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex h-12 cursor-pointer items-center justify-center gap-2 rounded-xl bg-primary px-6 font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex h-12 shrink-0 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 font-medium text-white shadow-sm transition-all hover:bg-emerald-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <Plus size={18} />
-              <span className="whitespace-nowrap">
-                {isSubmitting ? "Adding..." : "Add Query"}
-              </span>
+              {isSubmitting ? (
+                <>
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  <span className="whitespace-nowrap">Adding...</span>
+                </>
+              ) : (
+                <>
+                  <Plus size={18} />
+                  <span className="whitespace-nowrap">Add Query</span>
+                </>
+              )}
             </button>
           </div>
           {errors.root && (
-            <p className="mt-2 text-xs text-destructive">
+            <p className="mt-2 text-xs text-red-600 flex items-center gap-1">
+              <AlertCircle size={12} />
               {errors.root.message}
             </p>
           )}
         </form>
       </div>
 
-      {/* Queries List */}
-      <div className="space-y-3">
-        {queries.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-muted/20 py-16">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-              <Search className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <p className="mt-4 text-sm font-medium text-foreground">
-              No queries yet
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Add your first search query to get started
-            </p>
+      {/* Loading State */}
+      {isLoading && <QuerySkeleton />}
+
+      {/* Error State */}
+      {error && !isLoading && (
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-8 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+            <AlertCircle className="h-6 w-6 text-red-600" />
           </div>
-        ) : (
-          queries.map((query) => (
+          <h3 className="mt-4 text-sm font-semibold text-red-900">
+            Failed to load queries
+          </h3>
+          <p className="mt-2 text-sm text-red-700">
+            {error instanceof Error
+              ? error.message
+              : "Something went wrong. Please try again."}
+          </p>
+          <button
+            onClick={() => refetch()}
+            disabled={isRefetching}
+            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
+          >
+            <RefreshCw
+              size={16}
+              className={isRefetching ? "animate-spin" : ""}
+            />
+            {isRefetching ? "Retrying..." : "Try Again"}
+          </button>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!isLoading && !error && queries.length === 0 && (
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-stone-300 bg-stone-50 py-16 px-4">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white border border-stone-200 shadow-sm">
+            <Search className="h-8 w-8 text-stone-400" />
+          </div>
+          <h3 className="mt-6 text-base font-semibold text-stone-900">
+            No queries yet
+          </h3>
+          <p className="mt-2 text-center text-sm text-stone-600 max-w-sm">
+            Add your first search query to start discovering job opportunities
+            that match your criteria.
+          </p>
+        </div>
+      )}
+
+      {/* Queries List */}
+      {!isLoading && !error && queries.length > 0 && (
+        <div className="space-y-4">
+          {queries.map((query) => (
             <div
               key={query._id}
-              className="group rounded-2xl border border-border/50 bg-card p-6 shadow-sm transition-all hover:border-border hover:shadow-md"
+              className="group rounded-2xl border border-stone-200 bg-white p-6 shadow-sm transition-all duration-200 hover:border-stone-300 hover:shadow-md"
             >
               <div className="flex items-start justify-between gap-4">
                 {/* Query Info */}
@@ -205,38 +277,73 @@ export function SearchQueriesPanel() {
                             editingValue: e.target.value,
                           }))
                         }
-                        className="h-9 flex-1 rounded-lg border border-border bg-background px-3 text-sm outline-none ring-offset-background transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
+                        onKeyDown={(e) => {
+                          if (e.key === "Escape") {
+                            setEditing({ editingId: null, editingValue: "" });
+                          }
+                          if (
+                            e.key === "Enter" &&
+                            editing.editingValue.trim()
+                          ) {
+                            updateQueryMutation.mutate(
+                              { id: query._id, query: editing.editingValue },
+                              {
+                                onSuccess: () => {
+                                  setEditing({
+                                    editingId: null,
+                                    editingValue: "",
+                                  });
+                                },
+                              }
+                            );
+                          }
+                        }}
+                        className="h-9 flex-1 min-w-[200px] max-w-full rounded-lg border-2 border-emerald-400 bg-white px-3 text-sm text-stone-900 outline-none ring-2 ring-emerald-500/20 transition-all focus:ring-emerald-500/40"
                         autoFocus
+                        aria-label="Edit query"
                       />
                     ) : (
-                      <h3 className="text-balance text-lg font-semibold leading-relaxed text-foreground">
+                      <h3 className="text-lg font-semibold leading-relaxed text-stone-900 wrap-break-word">
                         {query.query}
                       </h3>
                     )}
 
-                    {query.active ? (
-                      <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                        <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                        Active
-                      </span>
-                    ) : (
-                      <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
-                        <PowerOff size={12} />
-                        Inactive
+                    {!editing.editingId && (
+                      <span
+                        className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                          query.active
+                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                            : "bg-stone-100 text-stone-600 border border-stone-200"
+                        }`}
+                      >
+                        {query.active ? (
+                          <>
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            Active
+                          </>
+                        ) : (
+                          <>
+                            <PowerOff size={12} />
+                            Inactive
+                          </>
+                        )}
                       </span>
                     )}
                   </div>
 
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1.5 text-xs text-stone-500">
                     <Clock size={12} />
                     <span>
-                      Created {new Date(query.createdAt).toLocaleDateString()}
+                      Created{" "}
+                      {formatDistanceToNow(new Date(query.createdAt), {
+                        addSuffix: true,
+                      })}
                     </span>
                   </div>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex shrink-0 items-start gap-1">
+                <div className="flex shrink-0 items-start gap-1.5">
                   {editing.editingId === query._id ? (
                     <>
                       <button
@@ -246,7 +353,6 @@ export function SearchQueriesPanel() {
                         }
                         onClick={() => {
                           if (!editing.editingValue.trim()) return;
-
                           updateQueryMutation.mutate(
                             { id: query._id, query: editing.editingValue },
                             {
@@ -259,7 +365,8 @@ export function SearchQueriesPanel() {
                             }
                           );
                         }}
-                        className="flex h-9 items-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-medium text-primary-foreground transition-all hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="flex h-9 items-center gap-1.5 rounded-lg bg-emerald-600 px-3 text-xs font-medium text-white transition-all hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        aria-label="Save changes"
                       >
                         <Check size={14} />
                         Save
@@ -272,7 +379,8 @@ export function SearchQueriesPanel() {
                             editingValue: "",
                           });
                         }}
-                        className="flex h-9 items-center gap-1.5 rounded-lg border border-border bg-background px-3 text-xs font-medium text-foreground transition-all hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                        className="flex h-9 items-center gap-1.5 rounded-lg border border-stone-300 bg-white px-3 text-xs font-medium text-stone-700 transition-all hover:bg-stone-50 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:ring-offset-2"
+                        aria-label="Cancel editing"
                       >
                         <X size={14} />
                         Cancel
@@ -287,10 +395,11 @@ export function SearchQueriesPanel() {
                             editingValue: query.query,
                           });
                         }}
-                        className="flex h-9 w-9 items-center justify-center rounded-lg transition-all hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                        className="flex h-9 w-9 items-center justify-center rounded-lg text-stone-600 transition-all hover:bg-stone-100 hover:text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:ring-offset-2"
                         title="Edit query"
+                        aria-label="Edit query"
                       >
-                        <Edit2 size={16} className="text-muted-foreground" />
+                        <Edit2 size={16} />
                       </button>
 
                       <button
@@ -301,37 +410,61 @@ export function SearchQueriesPanel() {
                           })
                         }
                         disabled={editing.editingId === query._id}
-                        className="flex h-9 w-9 items-center justify-center rounded-lg transition-all hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        className={`flex h-9 w-9 items-center justify-center rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+                          query.active
+                            ? "text-stone-600 hover:bg-stone-100 hover:text-stone-900 focus:ring-stone-500"
+                            : "text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 focus:ring-emerald-500"
+                        }`}
                         title={
+                          query.active ? "Deactivate query" : "Activate query"
+                        }
+                        aria-label={
                           query.active ? "Deactivate query" : "Activate query"
                         }
                       >
                         {query.active ? (
-                          <PowerOff
-                            size={16}
-                            className="text-muted-foreground"
-                          />
+                          <PowerOff size={16} />
                         ) : (
-                          <Power size={16} className="text-primary" />
+                          <Power size={16} />
                         )}
                       </button>
 
                       <button
-                        onClick={() => deleteQueryMutation.mutate(query._id)}
+                        onClick={() => setQueryToDelete(query)}
                         disabled={editing.editingId === query._id}
-                        className="flex h-9 w-9 items-center justify-center rounded-lg transition-all hover:bg-destructive/10 focus:outline-none focus:ring-2 focus:ring-destructive focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="flex h-9 w-9 items-center justify-center rounded-lg text-red-600 transition-all hover:bg-red-50 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                         title="Delete query"
+                        aria-label="Delete query"
                       >
-                        <Trash2 size={16} className="text-destructive" />
+                        <Trash2 size={16} />
                       </button>
                     </>
                   )}
                 </div>
               </div>
             </div>
-          ))
+          ))}
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmDialog
+        open={!!queryToDelete}
+        onOpenChange={(open) => !open && setQueryToDelete(null)}
+        title="Delete Query"
+        description="Are you sure you want to delete this query? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+        onConfirm={handleDeleteConfirm}
+        isLoading={deleteQueryMutation.isPending}
+      >
+        {queryToDelete && (
+          <p className="text-sm font-medium text-stone-900">
+            {queryToDelete.query}
+          </p>
         )}
-      </div>
+      </ConfirmDialog>
     </div>
   );
 }
