@@ -1,6 +1,6 @@
 "use client";
 
-import { apiFetch } from "@/lib/api";
+import { apiFetch } from "@/lib/apiFetch";
 import { isApiError } from "@/lib/errors";
 import { useUserStore } from "@/lib/stores/user-store";
 import { AuthResponse } from "@/types/user";
