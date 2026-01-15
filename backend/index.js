@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import helmet from "helmet";
 
 //Populating environment variables
 dotenv.config({ path: "../.env" });
@@ -17,6 +18,9 @@ const FRONTEND = process.env.FRONTEND_URL || "http://localhost:3000";
 
 //Initialising express app
 const app = express();
+
+// Security headers FIRST
+app.use(helmet());
 
 //built in middleware to parse request body
 app.use(express.json());

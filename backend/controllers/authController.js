@@ -1,19 +1,8 @@
 import User from "../models/User.js";
-import jwt from "jsonwebtoken";
-
-function signToken(id) {
-  const token = jwt.sign(
-    {
-      userId: id,
-    },
-    process.env.JWT_SECRET,
-    {
-      expiresIn: "1d",
-    }
-  );
-
-  return token;
-}
+import { v4 as uuidv4 } from "uuid";
+import { generateAccessToken, generateRefreshToken } from "../utils/token.js";
+import bcrypt from "bcryptjs";
+import RefreshToken from "../models/RefreshToken.js";
 
 export const registerUser = async (req, res, next) => {
   const { email, password, confirmPassword } = req.body;
@@ -62,7 +51,7 @@ export const registerUser = async (req, res, next) => {
   });
 };
 
-export const loginUser = async (req, res, next) => {
+export const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
   //checking if email and password are provided by the user
@@ -84,28 +73,109 @@ export const loginUser = async (req, res, next) => {
     });
   }
 
+  const accessToken = generateAccessToken(user._id);
+
   // generating the token
-  const token = signToken(user._id);
+  const tokenId = uuidv4();
+  const refreshToken = generateRefreshToken(user._id, tokenId);
 
-  // removing the password so that it is not included in the response
-  user.password = undefined;
+  const tokenHash = await bcrypt.hash(refreshToken, 10);
 
+  await RefreshToken.create({
+    userId: user._id,
+    tokenHash,
+    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+  });
   //sending cookie to the response
-  res.cookie("token", token, {
+  res.cookie("token", refreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     maxAge: 24 * 60 * 60 * 1000,
   });
   // lastly sending the response
-  res.status(200).json({
-    success: true,
-    user,
+  res.status(200).json({ accessToken });
+};
+
+export const refreshTokenController = async (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+
+  if (!refreshToken) {
+    return res.status(401).json({
+      error: "Refresh token missing",
+    });
+  }
+  const payload = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+
+  const storedTokens = await RefreshToken.find({
+    userId: payload.userId,
+    revoked: false,
+  });
+
+  const matchedToken = await Promise.any(
+    storedTokens.map(async (tokenDoc) => {
+      const isMatch = await bcrypt.compare(refreshToken, tokenDoc.tokenHash);
+      return isMatch ? tokenDoc : Promise.reject();
+    })
+  ).catch(() => null);
+
+  if (!matchedToken) {
+    return res.status(403).json({
+      error: "Invalid or reused refresh token",
+    });
+  }
+
+  matchedToken.revoked = true;
+  await matchedToken.save();
+
+  const newTokenId = uuidv4();
+  const newRefreshToken = generateRefreshToken(payload.userId, newTokenId);
+  const newAccessToken = generateAccessToken(payload.userId);
+
+  const hashedRefreshToken = await bcrypt.hash(newRefreshToken, 10);
+
+  await RefreshToken.create({
+    userId: payload.userId,
+    tokenHash: hashedRefreshToken,
+    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+  });
+
+  res.cookie("refreshToken", newRefreshToken, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",
+  });
+
+  return res.status(200).json({
+    accessToken: newAccessToken,
   });
 };
 
 // logout handler - clears the auth cookie
-export const logoutUser = (req, res, next) => {
+export const logoutUser = async (req, res, next) => {
+  const refreshToken = req.cookies.refreshToken;
+
+  if (!refreshToken) {
+    return res.status(204).json({
+      message: "Already logged out",
+    });
+  }
+
+  const tokens = await RefreshToken.find({ revoked: false });
+
+  let tokenRevoked = false;
+
+  for (const token of tokens) {
+    const isMatch = await bcrypt.compare(refreshToken, token.tokenHash);
+
+    if (isMatch) {
+      token.revoked = true;
+      await token.save();
+      tokenRevoked = true;
+      break;
+    }
+  }
+
   res.clearCookie("token", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -113,8 +183,9 @@ export const logoutUser = (req, res, next) => {
   });
 
   return res.status(200).json({
-    success: true,
-    message: "Logged out successfully",
+    message: tokenRevoked
+      ? "Logged out successfully"
+      : "Refresh token not found or already revoked",
   });
 };
 
