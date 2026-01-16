@@ -87,11 +87,10 @@ export const loginUser = async (req, res) => {
     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
   });
   //sending cookie to the response
-  res.cookie("token", refreshToken, {
+  res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    maxAge: 24 * 60 * 60 * 1000,
   });
   // lastly sending the response
   res.status(200).json({ accessToken });
@@ -143,7 +142,7 @@ export const refreshTokenController = async (req, res) => {
   res.cookie("refreshToken", newRefreshToken, {
     httpOnly: true,
     secure: true,
-    sameSite: "strict",
+    sameSite: "lax",
   });
 
   return res.status(200).json({
@@ -176,7 +175,7 @@ export const logoutUser = async (req, res, next) => {
     }
   }
 
-  res.clearCookie("token", {
+  res.clearCookie("refreshToken", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",

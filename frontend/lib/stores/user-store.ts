@@ -3,8 +3,9 @@
 import { create } from "zustand";
 
 import { AuthResponse, User } from "@/types/user";
-import { apiFetch } from "../api";
+
 import { isApiError } from "../errors";
+import { apiFetch } from "../apiFetch";
 
 interface UserStore {
   user: User | null;

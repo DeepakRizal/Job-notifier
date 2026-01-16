@@ -1,6 +1,7 @@
 "use client";
 
 import { apiFetch } from "@/lib/apiFetch";
+import { setAccessToken } from "@/lib/auth";
 import { isApiError } from "@/lib/errors";
 import { useUserStore } from "@/lib/stores/user-store";
 import { AuthResponse } from "@/types/user";
@@ -33,14 +34,20 @@ export function LoginPanel() {
 
   const onSubmit = async (data: Inputs) => {
     try {
-      const response = (await apiFetch<AuthResponse>("/auth/login", {
+      const response = (await apiFetch<{ accessToken: string }>("/auth/login", {
         method: "POST",
         data: { email: data.email, password: data.password },
-      })) as AuthResponse;
+      })) as { accessToken: string };
 
-      setUser(response.user);
+      setAccessToken(response.accessToken);
 
-      if (response.success) {
+      const { user, success } = (await apiFetch("auth/me")) as AuthResponse;
+
+      console.log(user, success);
+
+      setUser(user);
+
+      if (success) {
         router.push("/dashboard");
       }
     } catch (error: unknown) {

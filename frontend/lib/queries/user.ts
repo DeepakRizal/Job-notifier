@@ -1,5 +1,5 @@
 import { AuthResponse } from "@/types/user";
-import { apiFetch } from "../api";
+import { apiFetch } from "../apiFetch";
 
 export async function updateUserSkill(skill: string) {
   const res = (await apiFetch("/auth/update", {

@@ -2,6 +2,7 @@ import express from "express";
 import {
   getMe,
   loginUser,
+  registerUser,
   updateUser,
   logoutUser,
   removeSkill,
@@ -11,10 +12,10 @@ import authMiddleware from "../middlewares/auth.js";
 
 const router = express.Router();
 
-router.post("/register", refreshTokenController);
+router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.post("/logout", logoutUser);
-router.post("/refresh", generateRefreshToken);
+router.post("/refresh", refreshTokenController);
 router.get("/me", authMiddleware, getMe);
 router.patch("/update", authMiddleware, updateUser);
 router.patch("/remove-skill", authMiddleware, removeSkill);

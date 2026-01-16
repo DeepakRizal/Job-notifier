@@ -2,41 +2,44 @@ import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
 export default async function authMiddleware(req, res, next) {
-  // 1) Check for worker secret (bypass normal cookie login)
-  const workerSecret = req.headers["x-worker-secret"];
-  if (workerSecret && workerSecret === process.env.WORKER_SECRET) {
-    req.user = { _id: "worker-service-account", role: "system" };
-    return next();
-  }
+  try {
+    const workerSecret = req.headers["x-worker-secret"];
+    if (workerSecret === process.env.WORKER_SECRET) {
+      req.user = { _id: "worker-service-account", role: "system" };
+      return next();
+    }
 
-  //destructure the token
-  const { token } = req.cookies;
+    const authHeader = req.headers.authorization;
 
-  //check if the token exists
-  if (!token) {
-    return res.status(400).json({
-      success: false,
-      message: "Please login to perform this action",
-    });
-  }
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({
+        success: false,
+        message: "Access token missing",
+      });
+    }
 
-  //decode the token using jwt library
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const accessToken = authHeader.split(" ")[1];
 
-  //get the user from the database
-  const user = await User.findOne({ _id: decoded.userId }).select(
-    "-password -__v"
-  );
+    const decoded = jwt.verify(
+      accessToken,
+      process.env.JWT_ACCESS_TOKEN_SECRET
+    );
 
-  // if there is no user then return a error message
-  if (!user) {
+    const user = await User.findById(decoded.userId).select("-password -__v");
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    req.user = user;
+    next();
+  } catch (err) {
     return res.status(401).json({
       success: false,
-      message: "User not found. Please log in again.",
+      message: "Invalid or expired access token",
     });
   }
-
-  //attach the user to the request body
-  req.user = user;
-  next();
 }

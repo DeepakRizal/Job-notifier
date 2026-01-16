@@ -5,9 +5,9 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Menu, X } from "lucide-react";
 
-import { apiFetch } from "@/lib/api";
 import { useUserStore } from "@/lib/stores/user-store";
 import { useShallow } from "zustand/shallow";
+import { apiFetch } from "@/lib/apiFetch";
 
 export function Header() {
   const pathname = usePathname();
