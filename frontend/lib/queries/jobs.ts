@@ -1,5 +1,5 @@
 import { JobDetailResponse, JobDocument } from "@/types/job";
-import { apiFetch } from "../api";
+import { apiFetch } from "../apiFetch";
 
 type JobsResponse = { success: boolean; jobs: JobDocument[]; hasMore: boolean };
 

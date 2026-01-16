@@ -1,4 +1,4 @@
-import { apiFetch } from "../api";
+import { apiFetch } from "../apiFetch";
 
 export interface Query {
   _id: string;

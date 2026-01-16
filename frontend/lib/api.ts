@@ -1,33 +1,38 @@
-import axios, { AxiosRequestConfig } from "axios";
-import { ApiError } from "./errors";
+import axios from "axios";
+import { getAccessToken, setAccessToken } from "./auth";
+import { refreshClient } from "./refreshClient";
 
-export const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
+const api = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  withCredentials: true,
+});
 
-export async function apiFetch<T = unknown>(
-  path: string,
-  opts: AxiosRequestConfig = {}
-) {
-  const url = `${API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
+api.interceptors.request.use((config) => {
+  const token = getAccessToken();
 
-  try {
-    const res = await axios({
-      url,
-      withCredentials: true,
-      headers: {
-        "Content-Type": "application/json",
-        ...(opts.headers || {}),
-      },
-      ...opts,
-    });
-
-    return res.data as T;
-  } catch (err: unknown) {
-    if (axios.isAxiosError(err)) {
-      const status = err.response?.status;
-      const data = err.response?.data;
-
-      throw new ApiError(data?.message, status, data);
-    }
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
-}
+
+  return config;
+});
+
+api.interceptors.response.use(
+  (res) => res,
+  async (error) => {
+    console.log("This code is running.");
+    if (error.response?.status === 401 && !error.config._retry) {
+      error.config._retry = true;
+
+      const refreshRes = await refreshClient.post("/auth/refresh");
+      setAccessToken(refreshRes.data.accessToken);
+
+      error.config.headers.Authorization = `Bearer ${refreshRes.data.accessToken}`;
+
+      return api(error.config);
+    }
+    return Promise.reject(error);
+  }
+);
+
+export default api;
