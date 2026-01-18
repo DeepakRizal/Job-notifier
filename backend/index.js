@@ -1,13 +1,15 @@
-import express from "express";
 import dotenv from "dotenv";
+//Populating environment variables
+dotenv.config({ path: "../.env" });
+import express from "express";
+
 import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import helmet from "helmet";
+
 import { apiLimiter } from "./middlewares/rateLimiters.js";
 
-//Populating environment variables
-dotenv.config({ path: "../.env" });
 import connectDb from "./db/db.js";
 import authRouter from "./routes/authRoutes.js";
 import jobRouter from "./routes/jobRoutes.js";

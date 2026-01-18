@@ -17,7 +17,7 @@ export const authLimiter = rateLimit({
 });
 
 export const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
+  windowMs: 5 * 60 * 1000,
   max: 100,
   standardHeaders: true,
   legacyHeaders: false,
@@ -32,7 +32,7 @@ export const apiLimiter = rateLimit({
 
 export const workerLimiter = rateLimit({
   windowMs: 1 * 60 * 1000,
-  max: 20,
+  max: 30,
   keyGenerator: (req) => {
     return req.headers["x-source-domain"] || "worker-global";
   },
