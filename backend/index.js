@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import helmet from "helmet";
+import { apiLimiter } from "./middlewares/rateLimiters.js";
 
 //Populating environment variables
 dotenv.config({ path: "../.env" });
@@ -11,7 +12,6 @@ import connectDb from "./db/db.js";
 import authRouter from "./routes/authRoutes.js";
 import jobRouter from "./routes/jobRoutes.js";
 import queriesRouter from "./routes/queriesRouter.js";
-import authMiddleware from "./middlewares/auth.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 
 const FRONTEND = process.env.FRONTEND_URL || "http://localhost:3000";
@@ -40,9 +40,12 @@ app.use(cookieParser());
 //connect to db
 connectDb();
 
+//api limiter for the whole api
+app.use("/api", apiLimiter);
+
 //mounting routes
 app.use("/api/auth", authRouter);
-app.use("/api/jobs", authMiddleware, jobRouter);
+app.use("/api/jobs", jobRouter);
 // Queries router: GET / (for worker) doesn't need auth, others do
 app.use("/api/queries", queriesRouter);
 
@@ -54,8 +57,8 @@ app.get("/api/health", (req, res) => {
     dbConnectionState === 1
       ? "connected"
       : dbConnectionState === 2
-      ? "connecting"
-      : "disconnected";
+        ? "connecting"
+        : "disconnected";
 
   res.status(200).json({
     status: "ok",
