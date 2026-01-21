@@ -20,19 +20,30 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   async (error) => {
-    console.log("This code is running.");
-    if (error.response?.status === 401 && !error.config._retry) {
-      error.config._retry = true;
+    const originalRequest = error.config;
 
-      const refreshRes = await refreshClient.post("/auth/refresh");
-      setAccessToken(refreshRes.data.accessToken);
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+      originalRequest._retry = true;
 
-      error.config.headers.Authorization = `Bearer ${refreshRes.data.accessToken}`;
+      try {
+        const refreshRes = await refreshClient.post("/auth/refresh");
+        const newAccessToken = refreshRes.data?.accessToken;
 
-      return api(error.config);
+        if (newAccessToken) {
+          setAccessToken(newAccessToken);
+          originalRequest.headers = originalRequest.headers || {};
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        }
+
+        return api(originalRequest);
+      } catch (refreshErr) {
+        setAccessToken(null);
+        return Promise.reject(refreshErr);
+      }
     }
+
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;
