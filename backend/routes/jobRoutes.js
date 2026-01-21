@@ -12,7 +12,7 @@ const router = express.Router();
 
 router.post("/discover", workerLimiter, authMiddleware, discoverJob);
 router.get("/", getAllJobs);
-router.get("/mine", getMyJobs);
+router.get("/mine", authMiddleware, getMyJobs);
 router.get("/:id", getAjob);
 
 export default router;

@@ -73,27 +73,26 @@ export const discoverJob = async (req, res, next) => {
 
     let fingerprint = body.fingerprint;
     if (!fingerprint) {
-      const seed = (url || `${doc.title || ""}|${doc.company || ""}`).toString();
-      fingerprint = crypto
-        .createHash("sha256")
-        .update(seed)
-        .digest("hex");
+      const seed = (
+        url || `${doc.title || ""}|${doc.company || ""}`
+      ).toString();
+      fingerprint = crypto.createHash("sha256").update(seed).digest("hex");
     }
     doc.fingerprint = fingerprint;
 
     const ownerIds = body.owner || body.owners || [];
     const ownersArray = Array.isArray(ownerIds) ? ownerIds : [ownerIds];
     const validOwners = ownersArray.filter(
-      (id) => id && typeof id === "string"
+      (id) => id && typeof id === "string",
     );
 
     const query = fingerprint
       ? { fingerprint }
       : url
-      ? { url }
-      : sourceId
-      ? { source: doc.source, sourceId }
-      : { title: doc.title, company: doc.company };
+        ? { url }
+        : sourceId
+          ? { source: doc.source, sourceId }
+          : { title: doc.title, company: doc.company };
 
     // Use $set for fields, but $setOnInsert for createdAt if you want to track creation
     // Add owners to the owners array if they don't already exist
@@ -128,12 +127,12 @@ export const discoverJob = async (req, res, next) => {
 
     if (!isFresh) {
       console.log(
-        `Job too old (${Math.round(ageMs / 3600000)}h). Skipping notifications.`
+        `Job too old (${Math.round(ageMs / 3600000)}h). Skipping notifications.`,
       );
     } else {
       if (wasInserted) {
         console.log(
-          "New job inserted — running matcher and notifying matches."
+          "New job inserted — running matcher and notifying matches.",
         );
 
         // run your matcher for this single job (returns created Match docs)
@@ -274,7 +273,7 @@ export const getMyJobs = async (req, res, next) => {
 
     const limit = Math.min(
       100,
-      Math.max(1, parseInt(req.query.limit, 10) || 20)
+      Math.max(1, parseInt(req.query.limit, 10) || 20),
     );
 
     const escapeForRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

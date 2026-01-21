@@ -33,7 +33,7 @@ app.use(
     origin: FRONTEND,
     frontend: true,
     credentials: true,
-  })
+  }),
 );
 
 // middleware to parse cookies

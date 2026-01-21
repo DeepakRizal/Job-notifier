@@ -6,9 +6,11 @@ export const errorHandler = (err, req, res, next) => {
 
   console.log(err.stack);
 
+  const isProd = process.env.NODE_ENV === "production";
+
   res.status(statusCode).json({
     success: false,
-    err: message,
-    stack: err.stack,
+    message,
+    ...(isProd ? {} : { stack: err.stack }),
   });
 };
