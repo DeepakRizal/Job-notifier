@@ -57,7 +57,7 @@ async function postJob(job, ownerIds = []) {
     );
     return true;
   } catch (err) {
-    console.error("POST ERROR", err?.response?.status || "", err?.message);
+    console.error("POST ERROR", err?.response?.data.message);
     return false;
   }
 }
