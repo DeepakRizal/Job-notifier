@@ -10,15 +10,19 @@ export default async function authMiddleware(req, res, next) {
     }
 
     const authHeader = req.headers.authorization;
+    const bearerToken =
+      authHeader && authHeader.startsWith("Bearer ")
+        ? authHeader.split(" ")[1]
+        : null;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    const accessToken = bearerToken || req.cookies?.accessToken || null;
+
+    if (!accessToken) {
       return res.status(401).json({
         success: false,
         message: "Access token missing",
       });
     }
-
-    const accessToken = authHeader.split(" ")[1];
 
     const decoded = jwt.verify(
       accessToken,

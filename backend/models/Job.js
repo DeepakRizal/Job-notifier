@@ -81,7 +81,7 @@ const jobsSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 jobsSchema.index({ source: 1, sourceId: 1 }, { unique: true, sparse: true });

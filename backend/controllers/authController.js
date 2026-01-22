@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { generateAccessToken, generateRefreshToken } from "../utils/token.js";
 import bcrypt from "bcryptjs";
 import RefreshToken from "../models/RefreshToken.js";
+import jwt from "jsonwebtoken";
 
 export const registerUser = async (req, res, next) => {
   const { email, password, confirmPassword } = req.body;
@@ -86,13 +87,23 @@ export const loginUser = async (req, res) => {
     tokenHash,
     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
   });
-  //sending cookie to the response
+
+  const isProd = process.env.NODE_ENV === "production";
+
+  res.cookie("accessToken", accessToken, {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: "lax",
+    maxAge: 15 * 60 * 1000,
+  });
+
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: isProd,
     sameSite: "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
-  // lastly sending the response
+
   res.status(200).json({ accessToken });
 };
 
@@ -104,7 +115,11 @@ export const refreshTokenController = async (req, res) => {
       error: "Refresh token missing",
     });
   }
-  const payload = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+
+  const payload = jwt.verify(
+    refreshToken,
+    process.env.JWT_REFRESH_TOKEN_SECRET,
+  );
 
   const storedTokens = await RefreshToken.find({
     userId: payload.userId,
@@ -115,7 +130,7 @@ export const refreshTokenController = async (req, res) => {
     storedTokens.map(async (tokenDoc) => {
       const isMatch = await bcrypt.compare(refreshToken, tokenDoc.tokenHash);
       return isMatch ? tokenDoc : Promise.reject();
-    })
+    }),
   ).catch(() => null);
 
   if (!matchedToken) {
@@ -139,10 +154,20 @@ export const refreshTokenController = async (req, res) => {
     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
   });
 
+  const isProd = process.env.NODE_ENV === "production";
+
+  res.cookie("accessToken", newAccessToken, {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: "lax",
+    maxAge: 15 * 60 * 1000,
+  });
+
   res.cookie("refreshToken", newRefreshToken, {
     httpOnly: true,
-    secure: true,
+    secure: isProd,
     sameSite: "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
   return res.status(200).json({
@@ -175,9 +200,17 @@ export const logoutUser = async (req, res, next) => {
     }
   }
 
+  const isProd = process.env.NODE_ENV === "production";
+
+  res.clearCookie("accessToken", {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: "lax",
+  });
+
   res.clearCookie("refreshToken", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: isProd,
     sameSite: "lax",
   });
 
@@ -212,7 +245,7 @@ export const updateUser = async (req, res, next) => {
     { skills },
     {
       new: true,
-    }
+    },
   ).select("-password -__v");
 
   //once the user is updated send the user back in the response
@@ -233,7 +266,7 @@ export const removeSkill = async (req, res) => {
     { skills },
     {
       new: true,
-    }
+    },
   ).select("-password -__v");
 
   //once the user is updated send the user back in the response
