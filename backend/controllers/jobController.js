@@ -260,6 +260,7 @@ export const getAllJobs = async (req, res, next) => {
 };
 
 export const getMyJobs = async (req, res, next) => {
+  console.log(req);
   try {
     const { skills = [] } = req.user;
 

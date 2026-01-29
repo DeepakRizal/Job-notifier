@@ -102,6 +102,7 @@ export const loginUser = async (req, res) => {
     secure: isProd,
     sameSite: "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: "/api/auth/refresh",
   });
 
   res.status(200).json({ accessToken });
@@ -168,6 +169,7 @@ export const refreshTokenController = async (req, res) => {
     secure: isProd,
     sameSite: "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: "/api/auth/refresh",
   });
 
   return res.status(200).json({
