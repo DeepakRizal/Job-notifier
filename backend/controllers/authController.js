@@ -210,6 +210,7 @@ export const logoutUser = async (req, res, next) => {
     httpOnly: true,
     secure: isProd,
     sameSite: "lax",
+    path: "/api/auth/refresh",
   });
 
   return res.status(200).json({
