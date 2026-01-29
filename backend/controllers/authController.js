@@ -181,24 +181,20 @@ export const refreshTokenController = async (req, res) => {
 export const logoutUser = async (req, res, next) => {
   const refreshToken = req.cookies.refreshToken;
 
-  if (!refreshToken) {
-    return res.status(204).json({
-      message: "Already logged out",
-    });
-  }
-
   const tokens = await RefreshToken.find({ revoked: false });
 
   let tokenRevoked = false;
 
-  for (const token of tokens) {
-    const isMatch = await bcrypt.compare(refreshToken, token.tokenHash);
+  if (refreshToken) {
+    for (const token of tokens) {
+      const isMatch = await bcrypt.compare(refreshToken, token.tokenHash);
 
-    if (isMatch) {
-      token.revoked = true;
-      await token.save();
-      tokenRevoked = true;
-      break;
+      if (isMatch) {
+        token.revoked = true;
+        await token.save();
+        tokenRevoked = true;
+        break;
+      }
     }
   }
 
