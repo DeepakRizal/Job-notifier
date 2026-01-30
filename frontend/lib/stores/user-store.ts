@@ -6,7 +6,8 @@ import { AuthResponse, User } from "@/types/user";
 
 import { isApiError } from "../errors";
 import { apiFetch } from "../apiFetch";
-import { removeAccessToken } from "../auth";
+import { getAccessToken, removeAccessToken, setAccessToken } from "../auth";
+import { refreshClient } from "../refreshClient";
 
 interface UserStore {
   user: User | null;
@@ -35,6 +36,12 @@ export const useUserStore = create<UserStore>((set) => ({
   loadUser: async () => {
     set({ loading: true, error: null });
     try {
+      if (!getAccessToken()) {
+        const refreshRes = await refreshClient.post("/auth/refresh");
+        const newAccessToken = refreshRes.data?.accessToken ?? null;
+        setAccessToken(newAccessToken);
+      }
+
       const res = (await apiFetch("/auth/me")) as AuthResponse;
       set({ user: res.user });
     } catch (error) {

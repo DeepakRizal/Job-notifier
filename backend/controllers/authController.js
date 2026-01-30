@@ -84,6 +84,7 @@ export const loginUser = async (req, res) => {
 
   await RefreshToken.create({
     userId: user._id,
+    tokenId,
     tokenHash,
     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
   });
@@ -115,17 +116,37 @@ export const refreshTokenController = async (req, res) => {
     process.env.JWT_REFRESH_TOKEN_SECRET,
   );
 
-  const storedTokens = await RefreshToken.find({
-    userId: payload.userId,
-    revoked: false,
-  });
+  // Fast path: look up by tokenId (single bcrypt compare)
+  let matchedToken = null;
+  if (payload?.userId && payload?.tokenId) {
+    const tokenDoc = await RefreshToken.findOne({
+      userId: payload.userId,
+      tokenId: payload.tokenId,
+      revoked: false,
+      expiresAt: { $gt: new Date() },
+    });
 
-  const matchedToken = await Promise.any(
-    storedTokens.map(async (tokenDoc) => {
+    if (tokenDoc) {
       const isMatch = await bcrypt.compare(refreshToken, tokenDoc.tokenHash);
-      return isMatch ? tokenDoc : Promise.reject();
-    }),
-  ).catch(() => null);
+      matchedToken = isMatch ? tokenDoc : null;
+    }
+  }
+
+  // Backward-compatible fallback for older tokens without tokenId stored
+  if (!matchedToken) {
+    const storedTokens = await RefreshToken.find({
+      userId: payload.userId,
+      revoked: false,
+      expiresAt: { $gt: new Date() },
+    });
+
+    matchedToken = await Promise.any(
+      storedTokens.map(async (tokenDoc) => {
+        const isMatch = await bcrypt.compare(refreshToken, tokenDoc.tokenHash);
+        return isMatch ? tokenDoc : Promise.reject();
+      }),
+    ).catch(() => null);
+  }
 
   if (!matchedToken) {
     return res.status(403).json({
@@ -144,6 +165,7 @@ export const refreshTokenController = async (req, res) => {
 
   await RefreshToken.create({
     userId: payload.userId,
+    tokenId: newTokenId,
     tokenHash: hashedRefreshToken,
     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
   });

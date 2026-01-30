@@ -85,6 +85,8 @@ export function JobsDashboard() {
     return Array.from(uniqueJobsMap.values());
   }, [data]);
 
+  if (!authReady) return <JobCardSkeleton count={6} />;
+
   if (isLoading) return <JobCardSkeleton count={6} />;
 
   if (error) {
