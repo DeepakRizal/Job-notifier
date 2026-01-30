@@ -11,6 +11,7 @@ import { transformJob, type TransformedJob } from "./jobUtils";
 import { JobFiltersModal } from "./JobFiltersModal";
 import { useJobFilters } from "./useJobFilters";
 import { JobCardSkeleton } from "../jobs/JobCardSkeleton";
+import { useUserStore } from "@/lib/stores/user-store";
 
 const QUERY_STALE_TIME = 30_000;
 const DEBOUNCE_DELAY = 500;
@@ -33,6 +34,7 @@ export function JobsDashboard() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedQuery = useDebounce(searchQuery, DEBOUNCE_DELAY);
+  const { authReady } = useUserStore();
 
   const {
     data,
@@ -60,6 +62,7 @@ export function JobsDashboard() {
       return lastPage.hasMore ? pages.length + 1 : undefined;
     },
     staleTime: QUERY_STALE_TIME,
+    enabled: authReady,
   });
 
   const endOfListRef = useInfiniteScroll({

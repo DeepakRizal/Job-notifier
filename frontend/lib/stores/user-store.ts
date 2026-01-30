@@ -6,11 +6,13 @@ import { AuthResponse, User } from "@/types/user";
 
 import { isApiError } from "../errors";
 import { apiFetch } from "../apiFetch";
+import { removeAccessToken } from "../auth";
 
 interface UserStore {
   user: User | null;
   loading: boolean;
   error: string | null;
+  authReady: boolean;
 
   setUser: (user: User | null) => void;
   setLoading: (loading: boolean) => void;
@@ -22,9 +24,13 @@ export const useUserStore = create<UserStore>((set) => ({
   user: null,
   loading: true,
   error: null,
+  authReady: false,
   setUser: (user) => set({ user }),
   setLoading: (loading) => set({ loading }),
-  logout: () => set({ user: null }),
+  logout: () => {
+    removeAccessToken();
+    set({ user: null });
+  },
 
   loadUser: async () => {
     set({ loading: true, error: null });
@@ -38,7 +44,7 @@ export const useUserStore = create<UserStore>((set) => ({
         error: (error as Error).message ?? "Failed to load user",
       });
     } finally {
-      set({ loading: false });
+      set({ loading: false, authReady: true });
     }
   },
 }));

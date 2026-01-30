@@ -90,13 +90,6 @@ export const loginUser = async (req, res) => {
 
   const isProd = process.env.NODE_ENV === "production";
 
-  res.cookie("accessToken", accessToken, {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: "lax",
-    maxAge: 15 * 60 * 1000,
-  });
-
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
     secure: isProd,
@@ -157,13 +150,6 @@ export const refreshTokenController = async (req, res) => {
 
   const isProd = process.env.NODE_ENV === "production";
 
-  res.cookie("accessToken", newAccessToken, {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: "lax",
-    maxAge: 15 * 60 * 1000,
-  });
-
   res.cookie("refreshToken", newRefreshToken, {
     httpOnly: true,
     secure: isProd,
@@ -199,12 +185,6 @@ export const logoutUser = async (req, res, next) => {
   }
 
   const isProd = process.env.NODE_ENV === "production";
-
-  res.clearCookie("accessToken", {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: "lax",
-  });
 
   res.clearCookie("refreshToken", {
     httpOnly: true,
