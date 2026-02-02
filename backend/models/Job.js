@@ -26,7 +26,6 @@ const jobsSchema = new mongoose.Schema(
       index: true,
       unique: true,
       sparse: true,
-      default: undefined,
     },
     source: {
       type: String,

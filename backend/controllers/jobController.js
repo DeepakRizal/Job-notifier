@@ -41,19 +41,28 @@ export const discoverJob = async (req, res, next) => {
   try {
     const body = req.body;
 
-    const url = body.url || null;
-    const sourceId = body.sourceId || null;
+    const url =
+      typeof body.url === "string" && body.url.trim()
+        ? body.url.trim()
+        : undefined;
+
+    const sourceId =
+      typeof body.sourceId === "string" && body.sourceId.trim()
+        ? body.sourceId.trim()
+        : undefined;
+
+    if (sourceId !== undefined) {
+      body.sourceId = sourceId;
+    }
 
     let postedAt = null;
-
-    console.log(body);
 
     if (body.postedAt) {
       const d = new Date(body.postedAt);
 
       if (!isNaN(d)) postedAt = d;
     }
-    console.log(postedAt);
+
     const doc = {
       title: body.title || "No title",
       company: body.company || "",
