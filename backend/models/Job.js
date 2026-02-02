@@ -84,9 +84,21 @@ const jobsSchema = new mongoose.Schema(
   },
 );
 
-jobsSchema.index({ source: 1, sourceId: 1 }, { unique: true, sparse: true });
+// Core sorting
+jobsSchema.index({ postedAt: -1 });
 
-jobsSchema.index({ fingerprint: 1 }, { unique: true, sparse: true });
+// Mode / location filter
+jobsSchema.index({ location: 1, postedAt: -1 });
+
+// Experience filtering
+jobsSchema.index({ minExperience: 1, maxExperience: 1 });
+
+jobsSchema.index({
+  title: "text",
+  company: "text",
+  description: "text",
+  tags: "text",
+});
 
 jobsSchema.statics.makeFingerPrint = function ({ url, title, company }) {
   const seed = `${url || ""}|${title || ""}|${company || ""}`;

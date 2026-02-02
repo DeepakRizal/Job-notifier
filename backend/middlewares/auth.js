@@ -2,6 +2,8 @@ import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
 export default async function authMiddleware(req, res, next) {
+  console.log(req.headers.authorization);
+
   try {
     const workerSecret = req.headers["x-worker-secret"];
     if (workerSecret === process.env.WORKER_SECRET) {
@@ -26,7 +28,7 @@ export default async function authMiddleware(req, res, next) {
 
     const decoded = jwt.verify(
       accessToken,
-      process.env.JWT_ACCESS_TOKEN_SECRET
+      process.env.JWT_ACCESS_TOKEN_SECRET,
     );
 
     const user = await User.findById(decoded.userId).select("-password -__v");

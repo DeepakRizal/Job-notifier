@@ -84,24 +84,19 @@ export const loginUser = async (req, res) => {
 
   await RefreshToken.create({
     userId: user._id,
+    tokenId,
     tokenHash,
     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
   });
 
   const isProd = process.env.NODE_ENV === "production";
 
-  res.cookie("accessToken", accessToken, {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: "lax",
-    maxAge: 15 * 60 * 1000,
-  });
-
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
     secure: isProd,
     sameSite: "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: "/api/auth/refresh",
   });
 
   res.status(200).json({ accessToken });
@@ -121,17 +116,37 @@ export const refreshTokenController = async (req, res) => {
     process.env.JWT_REFRESH_TOKEN_SECRET,
   );
 
-  const storedTokens = await RefreshToken.find({
-    userId: payload.userId,
-    revoked: false,
-  });
+  // Fast path: look up by tokenId (single bcrypt compare)
+  let matchedToken = null;
+  if (payload?.userId && payload?.tokenId) {
+    const tokenDoc = await RefreshToken.findOne({
+      userId: payload.userId,
+      tokenId: payload.tokenId,
+      revoked: false,
+      expiresAt: { $gt: new Date() },
+    });
 
-  const matchedToken = await Promise.any(
-    storedTokens.map(async (tokenDoc) => {
+    if (tokenDoc) {
       const isMatch = await bcrypt.compare(refreshToken, tokenDoc.tokenHash);
-      return isMatch ? tokenDoc : Promise.reject();
-    }),
-  ).catch(() => null);
+      matchedToken = isMatch ? tokenDoc : null;
+    }
+  }
+
+  // Backward-compatible fallback for older tokens without tokenId stored
+  if (!matchedToken) {
+    const storedTokens = await RefreshToken.find({
+      userId: payload.userId,
+      revoked: false,
+      expiresAt: { $gt: new Date() },
+    });
+
+    matchedToken = await Promise.any(
+      storedTokens.map(async (tokenDoc) => {
+        const isMatch = await bcrypt.compare(refreshToken, tokenDoc.tokenHash);
+        return isMatch ? tokenDoc : Promise.reject();
+      }),
+    ).catch(() => null);
+  }
 
   if (!matchedToken) {
     return res.status(403).json({
@@ -150,24 +165,19 @@ export const refreshTokenController = async (req, res) => {
 
   await RefreshToken.create({
     userId: payload.userId,
+    tokenId: newTokenId,
     tokenHash: hashedRefreshToken,
     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
   });
 
   const isProd = process.env.NODE_ENV === "production";
 
-  res.cookie("accessToken", newAccessToken, {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: "lax",
-    maxAge: 15 * 60 * 1000,
-  });
-
   res.cookie("refreshToken", newRefreshToken, {
     httpOnly: true,
     secure: isProd,
     sameSite: "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: "/api/auth/refresh",
   });
 
   return res.status(200).json({
@@ -179,39 +189,30 @@ export const refreshTokenController = async (req, res) => {
 export const logoutUser = async (req, res, next) => {
   const refreshToken = req.cookies.refreshToken;
 
-  if (!refreshToken) {
-    return res.status(204).json({
-      message: "Already logged out",
-    });
-  }
-
   const tokens = await RefreshToken.find({ revoked: false });
 
   let tokenRevoked = false;
 
-  for (const token of tokens) {
-    const isMatch = await bcrypt.compare(refreshToken, token.tokenHash);
+  if (refreshToken) {
+    for (const token of tokens) {
+      const isMatch = await bcrypt.compare(refreshToken, token.tokenHash);
 
-    if (isMatch) {
-      token.revoked = true;
-      await token.save();
-      tokenRevoked = true;
-      break;
+      if (isMatch) {
+        token.revoked = true;
+        await token.save();
+        tokenRevoked = true;
+        break;
+      }
     }
   }
 
   const isProd = process.env.NODE_ENV === "production";
 
-  res.clearCookie("accessToken", {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: "lax",
-  });
-
   res.clearCookie("refreshToken", {
     httpOnly: true,
     secure: isProd,
     sameSite: "lax",
+    path: "/api/auth/refresh",
   });
 
   return res.status(200).json({

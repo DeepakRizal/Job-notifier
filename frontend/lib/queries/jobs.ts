@@ -15,7 +15,7 @@ export async function fetchJobs({
   limit?: number;
 }) {
   const params = new URLSearchParams();
-  // q -> backend expects `q`
+
   if (q) params.set("q", q);
   if (role) params.set("role", role);
 

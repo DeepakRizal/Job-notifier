@@ -5,3 +5,5 @@ export const setAccessToken = (token: string | null) => {
 };
 
 export const getAccessToken = () => accessToken;
+
+export const removeAccessToken = () => (accessToken = null);
