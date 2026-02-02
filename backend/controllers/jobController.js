@@ -46,12 +46,14 @@ export const discoverJob = async (req, res, next) => {
 
     let postedAt = null;
 
+    console.log(body);
+
     if (body.postedAt) {
       const d = new Date(body.postedAt);
 
       if (!isNaN(d)) postedAt = d;
     }
-
+    console.log(postedAt);
     const doc = {
       title: body.title || "No title",
       company: body.company || "",
