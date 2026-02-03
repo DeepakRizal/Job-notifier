@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import playwright from "playwright";
+import { logger } from "../../shared/logger.js";
 import {
   tryApplySiteSort,
   trySetExperienceSliderV2,
@@ -95,7 +96,7 @@ export default async function NaukriScraper({
       const result = await trySetExperienceSliderV2(page, {
         maxAttempts: 5,
       });
-      console.log("slider set result:", result);
+      logger.debug({ result }, "Slider set result");
 
       // If slider was set successfully, wait for results to refresh
       if (result.success) {

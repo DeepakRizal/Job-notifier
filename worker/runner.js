@@ -6,6 +6,7 @@ import Naukriscraper from "./scrapers/naukri.js";
 import LRU from "./lib/lruCache.js";
 import axios from "axios";
 import crypto from "crypto";
+import { logger } from "../shared/logger.js";
 
 const BACKEND = process.env.WORKER_BACKEND_URL || "http://localhost:4000";
 const USER_AGENT =
@@ -49,15 +50,17 @@ async function postJob(job, ownerIds = []) {
       timeout: 20000,
     });
     const ownerCount = ownerIds.length;
-    console.log(
-      "POST",
-      res.status,
-      job.title?.slice(0, 60) || job.sourceId || job.fingerprint?.slice(0, 8),
-      ownerCount > 0 ? `[${ownerCount} owner(s)]` : ""
+    logger.info(
+      {
+        status: res.status,
+        title: job.title?.slice(0, 60) || job.sourceId || job.fingerprint?.slice(0, 8),
+        ownerCount,
+      },
+      ownerCount > 0 ? `POST job [${ownerCount} owner(s)]` : "POST job"
     );
     return true;
   } catch (err) {
-    console.error("POST ERROR", err?.response?.data.message);
+    logger.error({ err: err?.response?.data?.message }, "POST job failed");
     return false;
   }
 }
@@ -69,9 +72,9 @@ async function processJobs(jobs, ownerIds = []) {
     job.fingerprint = makeFingerprint(job);
 
     if (recent.has(job.fingerprint)) {
-      console.log(
-        "skip local recent:",
-        job.title?.slice(0, 60) || job.sourceId || job.fingerprint.slice(0, 8)
+      logger.debug(
+        { title: job.title?.slice(0, 60) || job.sourceId, fp: job.fingerprint?.slice(0, 8) },
+        "Skip local recent"
       );
       continue;
     }
@@ -102,7 +105,7 @@ async function fetchQueries() {
     }
     return [];
   } catch (err) {
-    console.error("Failed to fetch queries from backend:", err?.message || err);
+    logger.warn({ err: err?.message }, "Failed to fetch queries from backend");
     // Fallback to environment variable if backend fails
     const fallbackQueries = (process.env.SCRAPE_QUERIES || "nodejs developer")
       .split(",")
@@ -142,7 +145,7 @@ async function runOnce() {
   const queriesToScrape = Array.from(queryCache.entries());
 
   if (queriesToScrape.length === 0) {
-    console.log("No active queries found. Skipping scrape cycle.");
+    logger.info("No active queries found. Skipping scrape cycle.");
     return;
   }
 
@@ -151,14 +154,16 @@ async function runOnce() {
     (sum, [, owners]) => sum + owners.size,
     0
   );
-  console.log(
+  logger.info(
+    { totalQueries, totalOwners },
     `Scraping ${totalQueries} unique query(ies) for ${totalOwners} total owner(s)`
   );
 
   for (const [canonicalQuery, ownerIds] of queriesToScrape) {
     const ownerArray = Array.from(ownerIds);
-    console.log(
-      `Scraping query: "${canonicalQuery}" [${ownerArray.length} owner(s)]`
+    logger.info(
+      { query: canonicalQuery, ownerCount: ownerArray.length },
+      `Scraping query: "${canonicalQuery}"`
     );
 
     try {
@@ -167,12 +172,13 @@ async function runOnce() {
         userAgent: USER_AGENT,
         sort: "date",
       });
-      console.log(
-        `Found ${jobs.length} jobs for "${canonicalQuery}" (serving ${ownerArray.length} owner(s))`
+      logger.info(
+        { query: canonicalQuery, jobCount: jobs.length, ownerCount: ownerArray.length },
+        `Found ${jobs.length} jobs for "${canonicalQuery}"`
       );
       await processJobs(jobs, ownerArray);
     } catch (err) {
-      console.error("Scrape error", err?.message || err);
+      logger.error({ err: err?.message, query: canonicalQuery }, "Scrape error");
     }
 
     // wait between queries
@@ -194,23 +200,26 @@ async function pollQueries() {
       (sum, owners) => sum + owners.size,
       0
     );
-    console.log(
-      `[Query Poll] Updated: ${totalQueries} unique query(ies), ${totalOwners} total owner(s)`
+    logger.info(
+      { totalQueries, totalOwners },
+      "[Query Poll] Updated queries"
     );
   } catch (err) {
-    console.error(
-      "[Query Poll] Failed to update queries:",
-      err?.message || err
+    logger.error(
+      { err: err?.message },
+      "[Query Poll] Failed to update queries"
     );
   }
 }
 
 async function main() {
-  console.log("Worker starting — backend:", BACKEND);
-  console.log(
-    `Configuration: Scrape interval: ${SCRAPE_INTERVAL / 1000}s, Query poll: ${
-      QUERY_POLL_INTERVAL / 1000
-    }s`
+  logger.info({ backend: BACKEND }, "Worker starting");
+  logger.info(
+    {
+      scrapeIntervalSec: SCRAPE_INTERVAL / 1000,
+      queryPollIntervalSec: QUERY_POLL_INTERVAL / 1000,
+    },
+    "Configuration"
   );
 
   // Initial query fetch
@@ -218,7 +227,7 @@ async function main() {
 
   // Poll queries from backend every 30 seconds
   setInterval(
-    () => pollQueries().catch((e) => console.error("pollQueries failure", e)),
+    () => pollQueries().catch((e) => logger.error({ err: e?.message }, "pollQueries failure")),
     QUERY_POLL_INTERVAL
   );
 
@@ -227,12 +236,12 @@ async function main() {
 
   // Scrape after every 5 minutes (using cached queries)
   setInterval(
-    () => runOnce().catch((e) => console.error("runOnce failure", e)),
+    () => runOnce().catch((e) => logger.error({ err: e?.message }, "runOnce failure")),
     SCRAPE_INTERVAL
   );
 }
 
 main().catch((err) => {
-  console.error(err);
+  logger.error({ err }, "Worker fatal error");
   process.exit(1);
 });

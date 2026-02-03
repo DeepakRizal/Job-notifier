@@ -1,12 +1,12 @@
 import mongoose from "mongoose";
+import { logger } from "../../shared/logger.js";
 
 export default async function connectDb() {
   try {
     await mongoose.connect(process.env.MONGODB_URI);
-
-    console.log("DB connected");
+    logger.info("DB connected");
   } catch (error) {
-    console.log("Failed to connect to mongodb");
+    logger.error({ err: error }, "Failed to connect to mongodb");
     process.exit(1);
   }
 }

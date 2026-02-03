@@ -3,16 +3,16 @@ import * as cheerio from "cheerio";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import Job from "./model/Jobs.js";
+import { logger } from "../shared/logger.js";
 
 dotenv.config({ path: "../.env" });
 
 async function connectDb() {
   try {
     await mongoose.connect(process.env.MONGODB_URI);
-
-    console.log("DB connected");
+    logger.info("DB connected");
   } catch (error) {
-    console.log(error);
+    logger.error({ err: error }, "Failed to connect to DB");
     process.exit(1);
   }
 }
@@ -32,7 +32,7 @@ async function run() {
     jobs.push({ title, url, company, postedAt });
   });
 
-  console.log(jobs);
+  logger.debug({ jobs }, "Parsed jobs");
 
   for (let job of jobs) {
     job.postedAt = new Date();
@@ -40,10 +40,10 @@ async function run() {
     await Job.create(job);
   }
 
-  console.log("Jobs saved to DB");
+  logger.info("Jobs saved to DB");
 }
 
 run().catch((e) => {
-  console.error(e);
+  logger.error({ err: e }, "testScrapper failed");
   process.exit(1);
 });

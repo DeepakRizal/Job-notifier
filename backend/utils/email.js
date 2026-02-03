@@ -1,9 +1,10 @@
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
-//Populating environment variables
+import { logger } from "../../shared/logger.js";
+
 dotenv.config({ path: "../.env" });
 
-console.log(process.env.SMTP_HOST);
+logger.debug({ smtpHost: process.env.SMTP_HOST }, "Email config");
 
 let transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
@@ -83,10 +84,10 @@ export async function sendEmail(to, job) {
       html,
     });
 
-    console.log("Email sent:", info.messageId);
+    logger.info({ messageId: info.messageId, to }, "Email sent");
     return true;
   } catch (error) {
-    console.log("An Error occured while sending an email", error);
+    logger.error({ err: error, to }, "Failed to send email");
     return false;
   }
 }

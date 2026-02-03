@@ -1,8 +1,9 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import { logger } from "../../shared/logger.js";
 
 export default async function authMiddleware(req, res, next) {
-  console.log(req.headers.authorization);
+  logger.debug({ hasAuth: !!req.headers.authorization }, "Auth middleware");
 
   try {
     const workerSecret = req.headers["x-worker-secret"];

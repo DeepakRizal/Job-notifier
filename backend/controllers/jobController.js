@@ -4,6 +4,7 @@ import User from "../models/User.js";
 import Match from "../models/Match.js";
 import { sendEmail } from "../utils/email.js";
 import crypto from "crypto";
+import { logger } from "../../shared/logger.js";
 
 const POSTED_AT_RANGES = {
   "24h": 1,
@@ -137,12 +138,13 @@ export const discoverJob = async (req, res, next) => {
     const isFresh = ageMs <= NOTIFY_WINDOW_MS;
 
     if (!isFresh) {
-      console.log(
+      logger.info(
         `Job too old (${Math.round(ageMs / 3600000)}h). Skipping notifications.`,
       );
     } else {
       if (wasInserted) {
-        console.log(
+        logger.info(
+          { source: doc.source },
           "New job inserted — running matcher and notifying matches.",
         );
 
@@ -167,12 +169,12 @@ export const discoverJob = async (req, res, next) => {
                 $set: { notified: true, notifiedAt: new Date() },
               });
             } else {
-              console.warn("Failed to send email to", user.email);
+              logger.warn({ email: user.email }, "Failed to send email");
             }
           }
         }
       } else {
-        console.log("Existing job updated — skipping immediate notifications.");
+        logger.info("Existing job updated — skipping immediate notifications.");
       }
     }
 
@@ -191,7 +193,7 @@ export const getAllJobs = async (req, res, next) => {
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const limit = Math.min(100, parseInt(req.query.limit, 10) || 20);
 
-    console.log(req.query);
+    logger.debug({ query: req.query }, "getAllJobs request");
 
     const escapeForRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 

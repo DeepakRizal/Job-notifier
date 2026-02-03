@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import playwright from "playwright";
+import { logger } from "../../shared/logger.js";
 
 function parseRelativeTime(text) {
   if (!text) return null;
@@ -142,5 +143,5 @@ const jobs = await NaukriScraper({
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.6312.86 Safari/537.36",
 });
 
-console.log("Jobs found:", jobs.length);
-console.log(jobs.slice(0, 2));
+logger.info({ count: jobs.length }, "Jobs found");
+logger.debug({ sample: jobs.slice(0, 2) }, "Sample jobs");

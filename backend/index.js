@@ -15,6 +15,7 @@ import authRouter from "./routes/authRoutes.js";
 import jobRouter from "./routes/jobRoutes.js";
 import queriesRouter from "./routes/queriesRouter.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
+import { logger } from "../shared/logger.js";
 
 const FRONTEND = process.env.FRONTEND_URL || "http://localhost:3000";
 
@@ -54,7 +55,7 @@ app.use("/api/queries", queriesRouter);
 //Api health route
 app.get("/api/health", (req, res) => {
   const dbConnectionState = mongoose.connection.readyState;
-  console.log(dbConnectionState);
+  logger.debug({ dbState: dbConnectionState }, "Health check");
   const dbStatus =
     dbConnectionState === 1
       ? "connected"
@@ -78,5 +79,5 @@ const PORT = process.env.PORT || 4000;
 
 // Starting the server
 app.listen(PORT, () => {
-  console.log(`Listening on port ${PORT}`);
+  logger.info({ port: PORT }, "Server listening");
 });

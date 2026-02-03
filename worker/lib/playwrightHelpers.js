@@ -1,3 +1,5 @@
+import { logger } from "../../shared/logger.js";
+
 export async function tryApplySiteSort(page, sort) {
   if (!sort) return;
 
@@ -40,7 +42,7 @@ export async function tryApplySiteSort(page, sort) {
     }
   } catch (err) {
     // best-effort — don't break the scraper if this fails
-    console.warn("tryApplySiteSort failed:", err?.message || err);
+    logger.warn({ err: err?.message }, "tryApplySiteSort failed");
   }
 }
 
@@ -100,8 +102,9 @@ export async function setNaukriExperienceSliderToZero(page, opts = {}) {
     const handleShowsZero = state.handleInnerText === "0";
     const sliderActivated = state.hasNotSelectedClass === false;
 
-    console.log(
-      `  → handleShowsZero: ${handleShowsZero}, sliderActivated: ${sliderActivated}`
+    logger.debug(
+      { handleShowsZero, sliderActivated },
+      "Slider state check"
     );
 
     // We need BOTH: slider activated AND handle shows 0
@@ -112,7 +115,7 @@ export async function setNaukriExperienceSliderToZero(page, opts = {}) {
   // Method 1: Click directly on the left edge of the slider track
   // ─────────────────────────────────────────────────────────────────────────────
   async function clickOnLeftEdge() {
-    console.log("📍 Method 1: Clicking on left edge of slider track...");
+    logger.debug("Method 1: Clicking on left edge of slider track");
 
     const info = await page.evaluate(() => {
       const slider = document.querySelector(".rc-slider");
@@ -120,8 +123,6 @@ export async function setNaukriExperienceSliderToZero(page, opts = {}) {
       if (!track) return null;
 
       const rect = track.getBoundingClientRect();
-      console.log("Track rect:", rect);
-
       // Click at exactly 0% position (left edge)
       return {
         x: rect.left + 2, // 2px from left edge
@@ -132,9 +133,7 @@ export async function setNaukriExperienceSliderToZero(page, opts = {}) {
     });
 
     if (info) {
-      console.log(
-        `  Clicking at x=${info.x}, y=${info.y} (track width: ${info.width})`
-      );
+      logger.debug({ x: info.x, y: info.y, width: info.width }, "Clicking at track");
       await page.mouse.click(info.x, info.y);
       await page.waitForTimeout(800);
     }
@@ -144,7 +143,7 @@ export async function setNaukriExperienceSliderToZero(page, opts = {}) {
   // Method 2: Drag handle all the way to the left
   // ─────────────────────────────────────────────────────────────────────────────
   async function dragHandleToLeft() {
-    console.log("📍 Method 2: Dragging handle to the left...");
+    logger.debug("Method 2: Dragging handle to the left");
 
     const coords = await page.evaluate(() => {
       const slider = document.querySelector(".rc-slider");
@@ -164,13 +163,11 @@ export async function setNaukriExperienceSliderToZero(page, opts = {}) {
     });
 
     if (!coords) {
-      console.log("  Could not get coordinates");
+      logger.debug("Could not get drag coordinates");
       return;
     }
 
-    console.log(
-      `  Handle at x=${coords.handleX}, rail left=${coords.railLeft}`
-    );
+    logger.debug({ handleX: coords.handleX, railLeft: coords.railLeft }, "Handle position");
 
     // Move to handle, press down, drag to left edge, release
     await page.mouse.move(coords.handleX, coords.handleY);
@@ -197,7 +194,7 @@ export async function setNaukriExperienceSliderToZero(page, opts = {}) {
   // Method 3: Use keyboard after focusing the slider
   // ─────────────────────────────────────────────────────────────────────────────
   async function useKeyboard() {
-    console.log("📍 Method 3: Using keyboard to set slider to 0...");
+    logger.debug("Method 3: Using keyboard to set slider to 0");
 
     try {
       // Focus on the handle
@@ -221,7 +218,7 @@ export async function setNaukriExperienceSliderToZero(page, opts = {}) {
       }
       await page.waitForTimeout(500);
     } catch (e) {
-      console.log("  Keyboard method failed:", e.message);
+      logger.debug({ err: e.message }, "Keyboard method failed");
     }
   }
 
@@ -229,7 +226,7 @@ export async function setNaukriExperienceSliderToZero(page, opts = {}) {
   // Method 4: Click on "Fresher" label if it exists
   // ─────────────────────────────────────────────────────────────────────────────
   async function clickFresherLabel() {
-    console.log("📍 Method 4: Looking for Fresher checkbox/label...");
+    logger.debug("Method 4: Looking for Fresher checkbox/label");
 
     const clicked = await page.evaluate(() => {
       // Look for fresher checkbox or label
@@ -255,10 +252,10 @@ export async function setNaukriExperienceSliderToZero(page, opts = {}) {
     });
 
     if (clicked) {
-      console.log("  Clicked on Fresher option");
+      logger.debug("Clicked on Fresher option");
       await page.waitForTimeout(800);
     } else {
-      console.log("  No Fresher option found");
+      logger.debug("No Fresher option found");
     }
   }
 
@@ -266,7 +263,7 @@ export async function setNaukriExperienceSliderToZero(page, opts = {}) {
   // Method 5: Direct position calculation
   // ─────────────────────────────────────────────────────────────────────────────
   async function directPositionClick() {
-    console.log("📍 Method 5: Direct position calculation for 0 years...");
+    logger.debug("Method 5: Direct position calculation for 0 years");
 
     const info = await page.evaluate(() => {
       const slider = document.querySelector(".rc-slider");
@@ -286,9 +283,7 @@ export async function setNaukriExperienceSliderToZero(page, opts = {}) {
     });
 
     if (info) {
-      console.log(
-        `  Slider width: ${info.sliderWidth}, clicking at x=${info.x}`
-      );
+      logger.debug({ sliderWidth: info.sliderWidth, x: info.x }, "Direct position click");
 
       // Double click to ensure it registers
       await page.mouse.click(info.x, info.y);
@@ -302,10 +297,10 @@ export async function setNaukriExperienceSliderToZero(page, opts = {}) {
   // Main execution
   // ─────────────────────────────────────────────────────────────────────────────
   try {
-    console.log("\n🎯 Starting experience slider adjustment to 0 years...");
+    logger.info("Starting experience slider adjustment to 0 years");
 
     // Wait for slider to appear
-    console.log("⏳ Waiting for slider...");
+    logger.debug("Waiting for slider");
     await page
       .waitForSelector(".rc-slider", { timeout: 10000 })
       .catch(() => null);
@@ -321,71 +316,67 @@ export async function setNaukriExperienceSliderToZero(page, opts = {}) {
     await page.waitForTimeout(500);
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      console.log(`\n═══════════════════════════════════════`);
-      console.log(`   ATTEMPT ${attempt}/${maxAttempts}`);
-      console.log(`═══════════════════════════════════════`);
+      logger.debug({ attempt, maxAttempts }, "Slider attempt");
 
       // Check initial state
       const initialState = await readState();
-      console.log("📊 Current state:", JSON.stringify(initialState, null, 2));
+      logger.debug({ state: initialState }, "Current slider state");
 
       if (isAtZero(initialState)) {
-        console.log("✅ Already at 0 years!");
+        logger.info("Already at 0 years");
         return { success: true, attempts: attempt, snapshot: initialState };
       }
 
       // Try methods in sequence
       await clickOnLeftEdge();
       let state = await readState();
-      console.log("📊 After Method 1:", state?.handleInnerText);
+      logger.debug({ handleInnerText: state?.handleInnerText }, "After Method 1");
       if (isAtZero(state)) {
-        console.log("✅ Success with Method 1!");
+        logger.info("Success with Method 1");
         return { success: true, attempts: attempt, snapshot: state };
       }
 
       await dragHandleToLeft();
       state = await readState();
-      console.log("📊 After Method 2:", state?.handleInnerText);
+      logger.debug({ handleInnerText: state?.handleInnerText }, "After Method 2");
       if (isAtZero(state)) {
-        console.log("✅ Success with Method 2!");
+        logger.info("Success with Method 2");
         return { success: true, attempts: attempt, snapshot: state };
       }
 
       await useKeyboard();
       state = await readState();
-      console.log("📊 After Method 3:", state?.handleInnerText);
+      logger.debug({ handleInnerText: state?.handleInnerText }, "After Method 3");
       if (isAtZero(state)) {
-        console.log("✅ Success with Method 3!");
+        logger.info("Success with Method 3");
         return { success: true, attempts: attempt, snapshot: state };
       }
 
       await clickFresherLabel();
       state = await readState();
-      console.log("📊 After Method 4:", state?.handleInnerText);
+      logger.debug({ handleInnerText: state?.handleInnerText }, "After Method 4");
       if (isAtZero(state)) {
-        console.log("✅ Success with Method 4!");
+        logger.info("Success with Method 4");
         return { success: true, attempts: attempt, snapshot: state };
       }
 
       await directPositionClick();
       state = await readState();
-      console.log("📊 After Method 5:", state?.handleInnerText);
+      logger.debug({ handleInnerText: state?.handleInnerText }, "After Method 5");
       if (isAtZero(state)) {
-        console.log("✅ Success with Method 5!");
+        logger.info("Success with Method 5");
         return { success: true, attempts: attempt, snapshot: state };
       }
 
-      // Wait before next attempt
-      console.log("⏳ Waiting before next attempt...");
+      logger.debug("Waiting before next attempt");
       await page.waitForTimeout(1000);
     }
 
     const finalState = await readState();
-    console.log("\n❌ All attempts failed!");
-    console.log("📊 Final state:", JSON.stringify(finalState, null, 2));
+    logger.warn({ finalState }, "All slider attempts failed");
     return { success: false, attempts: maxAttempts, snapshot: finalState };
   } catch (err) {
-    console.error("❌ setNaukriExperienceSliderToZero error:", err.message);
+    logger.error({ err: err.message }, "setNaukriExperienceSliderToZero error");
     return { success: false, attempts: 0, snapshot: null, error: err.message };
   }
 }
